@@ -1,4 +1,3 @@
-
 from midiutil.MidiFile import MIDIFile
 from music import Music
 
@@ -6,15 +5,16 @@ def create_MIDI(music: Music):
     # create your MIDI object
     mf = MIDIFile(music.tracks)
 
-    for track, measures in enumerate(music.tracks):   
+    for trackn, notes in enumerate(music.tracks):   
 
         time = 0    # start at the beginning
-        mf.addTrackName(track, time, "Track" + str(track))
-        mf.addTempo(track, time, music.tempo)
+        mf.addTrackName(trackn, time, "Track" + str(trackn))
+        mf.addTempo(trackn, time, music.tempo)
 
         # add some notes
         channel = 0
         volume = 100
+
 
         pitch = 60           # C4 (middle C)
         time = 0             # start on beat 0
