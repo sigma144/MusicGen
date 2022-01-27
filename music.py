@@ -4,6 +4,7 @@ A = 0; As = Bb = 1; B = Cb = 2; C = Bs = 3; Cs = Db = 4; D = 5; Ds = Eb = 6; E =
 MINOR_MODE = A; MAJOR_MODE = C
 MAJOR = [0, 4, 7]; MINOR = [0, 3, 7]; DOMINANT = MINOR; DIMINISHED = [0, 3, 6]; SUSPENDED = [0, 5, 7]; AUGMENTED = [0, 4, 8]
 FLAT = -1; NATURAL = 0; SHARP = 1;
+MIDDLE_C = 40
 
 class Note:
     def __init__(self, pitch, time, duration) -> None:
@@ -12,16 +13,12 @@ class Note:
         self.duration: Fraction = duration
 
 class Track:
-    def __init__(self) -> None:
-        self.instrument: int = None
-        self.notes: list[Note] = []
+    def __init__(self, instrument: int = 0, notes: list[Note] = []) -> None:
+        self.instrument = instrument; self.notes = notes
 
 class Music:
-    def __init__(self) -> None:
-        self.tracks: list[Track] = []
-        self.tempo = 100
-        self.key: int = C
-        self.mode: int = MAJOR_MODE
+    def __init__(self, tempo: int = 100, key: int = C, mode: int = MAJOR_MODE) -> None:
+        self.tempo = tempo; self.key = key; self.mode = mode; self.tracks: list[Track] = []
     def get_scale(self, key: int = None, mode: int = None, scale: int = None) -> int:
         if key is None: key = self.key
         if mode is None: mode = self.mode
@@ -29,12 +26,12 @@ class Music:
         #Establish mode
         mode_index = scale.index(mode)
         scale = [n - mode for n in scale[mode_index:]] + [n - mode + OCTAVE for n in scale[:mode_index]]
-        #Shift by key
-        scale = [n + key for n in scale]
+        #Shift by key and middle C
+        scale = [n + key + MIDDLE_C for n in scale]
         return scale
     def get_scale_note(self, scale_degree: int, key: int = None, mode: int = None, scale: int = None) -> int:
         scale = self.get_scale(key, mode, scale)
-        return scale[scale_degree % 8] + (scale_degree // 8) * 8
+        return scale[scale_degree % 7] + (scale_degree // 7) * OCTAVE
     def get_scale_chord(self, root_scale_degree: int, key: int = None, mode: int = None, scale: int = None, inversion: int = 0, seventh: list[int] = None) -> int:
         scale = self.get_scale(key, mode, scale)
         #Finish
