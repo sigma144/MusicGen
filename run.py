@@ -3,6 +3,18 @@ import music
 from music import Music, Track, Note
 import random
 
+#Multi-track
+testmusic = Music()
+testtrack = Track()
+for i in range(50):
+    testtrack.notes.append(Note(random.randrange(40, 80), i, 1))
+testmusic.tracks.append(testtrack)
+testtrack2 = Track(instrument = 19)
+for i in range(50):
+    testtrack2.notes.append(Note(random.randrange(40, 80), i, 1))
+testmusic.tracks.append(testtrack2)
+create_MIDI(testmusic, 'multi.mid')
+
 #Chaos
 testmusic = Music()
 testtrack = Track()

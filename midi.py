@@ -12,5 +12,5 @@ def create_MIDI(music, outfile='output.mid'):
         channel = trackn
         for n in track.notes:
             mf.addNote(trackn, channel, n.pitch, n.time, n.duration, volume)
-        with open(outfile, 'wb') as outf:
-            mf.writeFile(outf)
+    with open(outfile, 'wb') as outf:
+        mf.writeFile(outf)
