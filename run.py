@@ -37,10 +37,9 @@ create_MIDI(testmusic, 'chaos.mid')
 #Scale
 testmusic = Music()
 testtrack = Track()
-for i in range(50):
-    duration = random.randrange(4) + 1
-    time = random.randrange(3) + 1
-    testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(0, 20)), i*time, 2/duration))
+for _ in range(2):
+    for i in range(50):
+        testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(-10, 10)), i/2, 1/2))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'scale.mid')
 
@@ -80,3 +79,15 @@ for i in range(20):
         testtrack.notes.append(Note(n, i*3, 3))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'sevenths.mid')
+
+#Messing with rhythms
+testmusic = Music(key = E)
+testtrack = Track()
+time = 0
+for i in range(50):
+    duration = random.choice([1, 1/2])
+    if random.randrange(3) > 0:
+        testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(-10, 10)), time, duration))
+    time += duration
+testmusic.tracks.append(testtrack)
+create_MIDI(testmusic, 'rhythm.mid')
