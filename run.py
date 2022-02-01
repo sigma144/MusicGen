@@ -56,7 +56,7 @@ create_MIDI(testmusic, 'chords.mid')
 testmusic = Music()
 testtrack = Track(instrument = 0)
 for i in range(50):
-    for n in testmusic.get_scale_chord(random.randrange(7), inversion=random.randrange(3)):
+    for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(3)):
         testtrack.notes.append(Note(n, i*3, 3))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'triads.mid')
@@ -65,7 +65,7 @@ create_MIDI(testmusic, 'triads.mid')
 testmusic = Music()
 testtrack = Track(instrument = 0)
 for i in range(50):
-    for n in testmusic.get_scale_chord(random.randrange(7), inversion=random.randrange(3),
+    for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(3),
         seventh=random.choice([music.DOMINANT, music.MAJOR, music.DIMINISHED])):
         testtrack.notes.append(Note(n, i*3, 3))
 testmusic.tracks.append(testtrack)
