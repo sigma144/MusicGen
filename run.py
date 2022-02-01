@@ -1,7 +1,20 @@
 from midi import create_MIDI
 import music
+from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE
 from music import Music, Track, Note
 import random
+
+#Test
+testmusic = Music(scale = [A, As, Cs, D, E, F, Gs])
+testtrack = Track()
+for i in range(8):
+    #testtrack.notes.append(Note(testmusic.get_scale_note(i), i, 1))
+    print(testmusic.get_scale_note(i))
+
+'''
+
+testmusic.tracks.append(testtrack)
+create_MIDI(testmusic, 'test.mid')
 
 #Multi-track
 testmusic = Music()
@@ -50,3 +63,5 @@ for _ in range(3):
         testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(0, 20)), i*3, 3))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'chords.mid')
+
+'''
