@@ -34,12 +34,11 @@ class Music:
         return self.scale[scale_degree % 7] + (scale_degree // 7) * OCTAVE
     def get_scale_chord(self, root_scale_degree, inversion = 0, seventh = None):
         chord = [self.get_scale_note(root_scale_degree), self.get_scale_note(root_scale_degree + 2), self.get_scale_note(root_scale_degree + 4)]
+        if seventh == MAJOR: chord.append(chord[0] + 11)
+        elif seventh == DOMINANT: chord.append(chord[0] + 10)
+        elif seventh == DIMINISHED: chord.append(chord[0] + 9)
         for _ in range(inversion):
             chord = chord[1:] + [chord[0] + OCTAVE]
-        root_note = self.get_scale_note(0)
-        if seventh == MAJOR: chord.append(root_note + 11)
-        elif seventh == DOMINANT: chord.append(root_note + 10)
-        elif seventh == DIMINISHED: chord.append(root_note + 9)
         return chord
     def get_chord(self, root_note, quality = None, inversion = 0, seventh = None):
         if not (quality is list): raise Exception(f"Unknown chord quality {quality}")

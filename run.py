@@ -70,3 +70,13 @@ for i in range(20):
         testtrack.notes.append(Note(n, i*3, 3))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'triads.mid')
+
+#Triads+Sevenths
+testmusic = Music()
+testtrack = Track(instrument = 0)
+for i in range(20):
+    for n in testmusic.get_scale_chord(random.randrange(7), inversion=random.randrange(3),
+        seventh=random.choice([music.DOMINANT, music.MAJOR, music.DIMINISHED])):
+        testtrack.notes.append(Note(n, i*3, 3))
+testmusic.tracks.append(testtrack)
+create_MIDI(testmusic, 'sevenths.mid')
