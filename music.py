@@ -39,6 +39,7 @@ class Music:
         scale = self.get_scale(key, mode, scale)
         #Finish
     def get_chord(self, root_note: int, quality: list[int] = None, inversion: int = 0, seventh: list[int] = None):
+    # def get_chord(self, root_note: int, quality: (int) list = None, inversion: int = 0, seventh: list[int] = None):
         if not (quality is list): raise Exception(f"Unknown chord quality {quality}")
         chord = [n + root_note for n in quality]
         if seventh == MAJOR: chord.append(root_note + 11)
