@@ -38,17 +38,17 @@ class Music:
         elif seventh == DOMINANT: chord.append(chord[0] + 10)
         elif seventh == DIMINISHED: chord.append(chord[0] + 9)
         for _ in range(inversion):
-            chord = chord[1:] + [chord[0] + OCTAVE]
+            chord.append(chord.pop(0) + OCTAVE)
         return chord
     def get_chord(self, root_note, quality = None, inversion = 0, seventh = None):
-        if not (quality is list): raise Exception(f"Unknown chord quality {quality}")
+        if not isinstance(quality, list): raise Exception(f"Unknown chord quality {quality}")
         chord = [n + root_note for n in quality]
         if seventh == MAJOR: chord.append(root_note + 11)
         elif seventh == DOMINANT: chord.append(root_note + 10)
         elif seventh == DIMINISHED: chord.append(root_note + 9)
-        else: raise Exception(f"Unknown seventh: {seventh}")
+        elif not (seventh is None): raise Exception(f"Unknown seventh: {seventh}")
         for _ in range(inversion):
-            chord.append(chord.pop(0) - OCTAVE)
+            chord.append(chord.pop(0) + OCTAVE)
         return chord
 
 

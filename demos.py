@@ -1,6 +1,7 @@
 from midi import create_MIDI
 import music
 from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE
+from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
 from music import Music, Track, Note
 import random
 
@@ -52,7 +53,7 @@ for _ in range(3):
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'chords.mid')
 
-#Triads
+#Scale Triads
 testmusic = Music()
 testtrack = Track(instrument = 0)
 for i in range(50):
@@ -61,15 +62,25 @@ for i in range(50):
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'triads.mid')
 
-#Triads+Sevenths
+#Scale Triads+Sevenths
 testmusic = Music()
 testtrack = Track(instrument = 0)
 for i in range(50):
-    for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(3),
+    for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(4),
         seventh=random.choice([music.DOMINANT, music.MAJOR, music.DIMINISHED])):
         testtrack.notes.append(Note(n, i*3, 3))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'sevenths.mid')
+
+#Random Triads+Sevenths
+testmusic = Music()
+testtrack = Track(instrument = 0)
+for i in range(50):
+    for n in testmusic.get_chord(random.randrange(50, 70), quality=random.choice([MINOR, MAJOR, DIMINISHED, AUGMENTED, SUSPENDED]),
+        inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
+        testtrack.notes.append(Note(n, i*3, 3))
+testmusic.tracks.append(testtrack)
+create_MIDI(testmusic, 'triadr.mid')
 
 #Messing with rhythms
 testmusic = Music(key = E)
