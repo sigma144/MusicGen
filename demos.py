@@ -37,48 +37,48 @@ create_MIDI(testmusic, 'scale.mid')
 
 #Chaos Chords
 testmusic = Music()
-testtrack = Track(instrument = 19)
+testtrack = Track(instrument = 89)
 for _ in range(3):
     for i in range(50):
-        testtrack.notes.append(Note(random.randrange(40, 80), i*3, 3))
+        testtrack.notes.append(Note(random.randrange(40, 80), i*5, 5))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'chordc.mid')
 
 #Scale Chords
 testmusic = Music()
-testtrack = Track(instrument = 19)
+testtrack = Track(instrument = 89)
 for _ in range(3):
     for i in range(50):
-        testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(0, 20)), i*3, 3))
+        testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(0, 20)), i*5, 5))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'chords.mid')
 
 #Scale Triads
 testmusic = Music()
-testtrack = Track(instrument = 0)
+testtrack = Track(instrument = 89)
 for i in range(50):
     for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(3)):
-        testtrack.notes.append(Note(n, i*3, 3))
+        testtrack.notes.append(Note(n, i*5, 5))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'triads.mid')
 
 #Scale Triads+Sevenths
 testmusic = Music()
-testtrack = Track(instrument = 0)
+testtrack = Track(instrument = 89)
 for i in range(50):
     for n in testmusic.get_scale_chord(random.randrange(7) - 6, inversion=random.randrange(4),
         seventh=random.choice([music.DOMINANT, music.MAJOR, music.DIMINISHED])):
-        testtrack.notes.append(Note(n, i*3, 3))
+        testtrack.notes.append(Note(n, i*5, 5))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'sevenths.mid')
 
 #Random Triads+Sevenths
 testmusic = Music()
-testtrack = Track(instrument = 0)
+testtrack = Track(instrument = 89)
 for i in range(50):
     for n in testmusic.get_chord(random.randrange(50, 70), quality=random.choice([MINOR, MAJOR, DIMINISHED, AUGMENTED, SUSPENDED]),
         inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
-        testtrack.notes.append(Note(n, i*3, 3))
+        testtrack.notes.append(Note(n, i*5, 5))
 testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'triadr.mid')
 
