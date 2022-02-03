@@ -12,13 +12,13 @@ def accomp_from_chords(instrument, chords, style=CHORDS, **config):
         floor = config['floor'] if 'floor' in config else 40
         notes = [Note(c[0].pitch % OCTAVE + floor - floor % OCTAVE, c[0].time, c[0].duration) for c in chords]
     elif style == CHORDS:
-        floor, ceiling = config['range'] if 'range' in config else [60, 80]
-        notes = [copy(n) for n in chords]
-        for n in notes:
+        floor, ceiling = config['range'] if 'range' in config else [60, 72]
+        notes = [copy(n) for c in chords for n in c]
+        for i,n in enumerate(notes):
             if n.pitch < floor:
-                n.pitch += OCTAVE * ((floor - n.pitch) // OCTAVE)
+                n.pitch += OCTAVE * ((floor - n.pitch) // OCTAVE + 1)
             if n.pitch > ceiling:
-                n.pitch += OCTAVE * ((n.pitch - ceiling) // OCTAVE)
+                n.pitch -= OCTAVE * ((n.pitch - ceiling) // OCTAVE + 1)
     elif style == RHYTHMIC:
         chord_notes = accomp_from_chords(instrument, chords, CHORDS)
         rhythms = rhythm.generate_rhythm(beats = 4)

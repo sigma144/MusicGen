@@ -13,6 +13,8 @@ class Note:
         self.pitch = pitch
         self.time: float = time
         self.duration: float = duration
+    def __repr__(self):
+        return f"{self.pitch} {self.time} {self.duration}"
 
 class Track:
     '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
