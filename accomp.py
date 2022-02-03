@@ -6,31 +6,28 @@ import random
 import rhythmgen
 
 BASS = 0; CHORDS = 1; ARPEGGIO = 2; RHYTHMIC = 3; RHYTHMIC_BASS = 4
-def accomp_from_chords(instrument, chords, style=CHORDS, **config):
-    add_octave = -OCTAVE if instrument in [32,33,34,35,36,37,38,39,43,58,70] else 0
+def accomp_from_chords(chords, style=CHORDS, **config):
     if style == BASS:
         floor = config['floor'] if 'floor' in config else 40
-        notes = [Note(c[0].pitch % OCTAVE + floor - floor % OCTAVE, c[0].time, c[0].duration) for c in chords]
+        notes = [put_in_range(Note(c[0].pitch, c[0].time, c[0].duration), floor, floor+12) for c in chords]
     elif style == CHORDS:
         floor, ceiling = config['range'] if 'range' in config else [60, 72]
         notes = [copy(n) for c in chords for n in c]
-        for i,n in enumerate(notes):
-            if n.pitch < floor:
-                n.pitch += OCTAVE * ((floor - n.pitch) // OCTAVE + 1)
-            if n.pitch > ceiling:
-                n.pitch -= OCTAVE * ((n.pitch - ceiling) // OCTAVE + 1)
+        notes = put_in_range(notes, floor, ceiling)
     elif style == RHYTHMIC:
-        chord_notes = accomp_from_chords(instrument, chords, CHORDS)
+        floor, ceiling = config['range'] if 'range' in config else [60, 72]
         rhythm  = rhythmgen.generate_rhythm(beats = chords[0][0].duration * 2)
         notes = []
+        time = 0
         for c in chords:
+            c = put_in_range(c, floor, ceiling)
             for b in rhythm:
-                for n in chord_notes:
-                    notes.append(Note(n.pitch, b, 1/2))
-                if b >= chord_notes[0].duration:
+                if b >= c[0].duration:
                     break
+                for n in c:
+                    notes.append(Note(n.pitch, b + time, 1/2))
+            time += c[0].duration
     elif style == ARPEGGIO:
-        chord_notes = accomp_from_chords(instrument, chords, CHORDS)
         floor, ceiling = config['range'] if 'range' in config else [60, 80]
         notes = []
         time = 0
@@ -43,18 +40,26 @@ def accomp_from_chords(instrument, chords, style=CHORDS, **config):
             notes += [Note(n, i/2 + time, 1) for i,n in enumerate(pattern)]
             time += c[0].duration
     elif style == RHYTHMIC_BASS:
-        chord_notes = accomp_from_chords(instrument, chords, BASS)
+        floor, ceiling = config['range'] if 'range' in config else [40, 52]
         rhythm  = rhythmgen.generate_rhythm(beats = chords[0][0].duration * 2)
         notes = []
+        time = 0
         for c in chords:
             for b in rhythm:
-                notes.append(Note(c[0].pitch, b, 1/2))
-                if b >= chord_notes[0].duration:
+                if b >= c[0].duration:
                     break
+                notes.append(put_in_range(Note(c[0].pitch, b + time, 1/2), floor, ceiling))
+            time += c[0].duration
     else: raise Exception(f"Unknown style {style}")
     return notes
 
-    
-
-
-
+def put_in_range(notes, floor, ceiling):
+    if isinstance(notes, Note):
+        return put_in_range([notes], floor, ceiling)[0]
+    notes = [copy(n) for n in notes]
+    for n in notes:
+        if n.pitch < floor:
+            n.pitch += OCTAVE * ((floor - n.pitch) // OCTAVE + 1)
+        if n.pitch > ceiling:
+            n.pitch -= OCTAVE * ((n.pitch - ceiling) // OCTAVE + 1)
+    return notes
