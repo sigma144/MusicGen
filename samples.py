@@ -37,17 +37,36 @@ class Samples():
         return testmusic
 
     # generates random chord progressions
-    def chord_progression_generator():
+    def chord_prog_generator_rand():
 
         testmusic = Music()
         testtrack = Track(instrument = 0)
         duration = 3
         numChords = 4
+        chords = []
 
         for i in range(numChords):
             for n in testmusic.get_chord(random.randrange(50, 70), quality=random.choice([MINOR, MAJOR, DIMINISHED, AUGMENTED, SUSPENDED]),
                 inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
                 testtrack.notes.append(Note(n, i*duration, duration))
+                chords.append(n)
         testmusic.tracks.append(testtrack)
 
-        return testmusic
+        return testmusic, chords
+
+    # generates chord progressions in the same scale
+    def chord_prog_generator_scale(progKey = C, numChords = 4):
+
+        testmusic = Music(key=progKey)
+        testtrack = Track(instrument = 0)
+        duration = 3
+        chords = []
+
+        for i in range(numChords):
+            for n in testmusic.get_scale_chord(random.randrange(7)-6,
+                inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
+                testtrack.notes.append(Note(n, i*duration, duration))
+                chords.append(n)
+        testmusic.tracks.append(testtrack)
+
+        return testmusic, chords
