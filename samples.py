@@ -1,4 +1,4 @@
-from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE, DOMINANT
+from music import A, MIDDLE_A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE, DOMINANT, DIMINISHED, AUGMENTED, SUSPENDED, MAJOR, MINOR
 from music import Music, Track, Note
 import random
 
@@ -19,32 +19,35 @@ class Samples():
 
     # C, Am, Dm, F chord progression
     def sample2():
-        sample = Music(key = C, tempo = 150)
+        
+        testmusic = Music(tempo=150)
         testtrack = Track(instrument = 0)
-        duration = 4
 
         chords = []
-        chords.append(sample.get_scale_chord(A))
-        chords.append(sample.get_scale_chord(A, seventh=DOMINANT))
+        chords.append(testmusic.get_chord(MIDDLE_A + C, quality=MAJOR))
+        chords.append(testmusic.get_chord(MIDDLE_A + A, quality=MINOR))
+        chords.append(testmusic.get_chord(MIDDLE_A + D, quality=MINOR))
+        chords.append(testmusic.get_chord(MIDDLE_A + F, quality=MAJOR))
+        
         for i, chord in enumerate(chords):
-            for j in range(len(chords)):
-                testtrack.notes.append(Note(chord[j], i, duration))
-        
-        sample.tracks.append(testtrack)
-        return sample
+            for note in chord:
+                testtrack.notes.append(Note(note, i*3, 3))
+        testmusic.tracks.append(testtrack)
 
+        return testmusic
 
-    # C chord split
-    def sample3():
-        sample = Music(key = C, tempo = 150)
+    # generates random chord progressions
+    def chord_progression_generator():
+
+        testmusic = Music()
         testtrack = Track(instrument = 0)
-        duration = 4
+        duration = 3
+        numChords = 4
 
-        chord = sample.get_scale_chord(C)
-        for _ in range(3):
-            for i, note in enumerate(chord):
-                testtrack.notes.append(Note(note, i*duration, duration))
-        
-        sample.tracks.append(testtrack)
-        return sample
+        for i in range(numChords):
+            for n in testmusic.get_chord(random.randrange(50, 70), quality=random.choice([MINOR, MAJOR, DIMINISHED, AUGMENTED, SUSPENDED]),
+                inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
+                testtrack.notes.append(Note(n, i*duration, duration))
+        testmusic.tracks.append(testtrack)
 
+        return testmusic
