@@ -3,7 +3,7 @@ import music
 from music import Music, Track, Note
 import random
 
-#Multi-track
+#Multi-track, default instrument is 0
 testmusic = Music()
 testtrack = Track()
 for i in range(50):
