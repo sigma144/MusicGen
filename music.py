@@ -1,62 +1,88 @@
-from fractions import Fraction
-
 A = 0; As = Bb = 1; B = Cb = 2; C = Bs = 3; Cs = Db = 4; D = 5; Ds = Eb = 6; E = Fb = 7; F = Es = 8; Fs = Gb = 9; G = 10; Gs = Ab = 11; OCTAVE = 12
 MINOR_MODE = A; MAJOR_MODE = C
 MAJOR = [0, 4, 7]; MINOR = [0, 3, 7]; DOMINANT = MINOR; DIMINISHED = [0, 3, 6]; SUSPENDED = [0, 5, 7]; AUGMENTED = [0, 4, 8]
 FLAT = -1; NATURAL = 0; SHARP = 1
-MIDDLE_C = 40
+MIDDLE_A = 57; MIDDLE_C = 60
 
 class Note:
-    # time and duration in beats
+    '''Create a music note to add to a Track object.
+    pitch(int): The MIDI pitch of the note (MIDDLE_C = 60 as shown above)
+    time(float): The beat number on which the note occurs (fractions for offbeats)
+    duration(float): How many beats the note lasts for'''
     def __init__(self, pitch, time, duration):
         self.pitch = pitch
-        self.time: Fraction = time
-        self.duration: Fraction = duration
+        self.time: float = time
+        self.duration: float = duration
+    def __repr__(self):
+        return f"{self.pitch} {self.time} {self.duration}"
 
 class Track:
+    '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
+    instrument(int): The instrument for this track (see instruments.txt for instrument numbers)
+    notes(list[Note]): An optional list of Notes to initialize the track with'''
     def __init__(self, instrument = 0, notes = None):
         if notes is None: notes = []
         self.instrument = instrument; self.notes = notes
+    '''Add a note to the track. Same function signature as the Note constructor.'''
+    def add_note(self, pitch, time, duration):
+        self.notes.append(Note(pitch, time, duration))
 
 class Music:
-    # tempo: speed of a given piece
-    def __init__(self, tempo = 100, key = C, mode = MAJOR_MODE):
-        self.tempo = tempo; self.key = key; self.mode = mode; self.tracks = []
-
-    def get_scale(self, key = None, mode = None, scale = None):
-        if key is None: key = self.key
-        if mode is None: mode = self.mode
-        if scale is None: scale = [A, B, C, D, E, F, G]
-        #Establish mode
-        mode_index = scale.index(mode)
-        scale = [n - mode for n in scale[mode_index:]] + [n - mode + OCTAVE for n in scale[:mode_index]]
-        #Shift by key and middle C
-        scale = [n + key + MIDDLE_C for n in scale]
-        return scale
-
-    def get_scale_note(self, scale_degree, key = None, mode = None, scale = None):
-        scale = self.get_scale(key, mode, scale)
-        return scale[scale_degree % 7] + (scale_degree // 7) * OCTAVE
-
-    def get_scale_chord(self, root_scale_degree, key = None, mode = None, scale = None, inversion = 0, seventh = None) :
-        scale = self.get_scale(key, mode, scale)
-        #Finish
-
-    def get_chord(self, root_note, quality = None, inversion = 0, seventh = None):
-        if not (quality is list): raise Exception(f"Unknown chord quality {quality}")
+    '''Create a new piece of music to be turned into MIDI.
+    tempo(int) = 100: BPM of the song
+    key(int) = C: Key of the song, used to generate scale. Pass in a note letter such as A or Bb
+    mode_or_scale(int or list[int]) = MAJOR_MODE: Mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
+    def __init__(self, tempo = 100, key = C, mode_or_scale = MAJOR_MODE):
+        self.tempo = tempo; self.key = key; self.tracks = []
+        self.set_scale(mode_or_scale)
+    '''Sets the scale of the song while shifting it to match the current musical key.
+    mode_or_scale(int or list[int]): New mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
+    def set_scale(self, mode_or_scale):
+        if isinstance(mode_or_scale, list):
+            scale = mode_or_scale
+            scale = [n - scale[0] + self.key + MIDDLE_A for n in scale]
+            for i in range(1, len(scale)):
+                if scale[i] < scale[i-1]:
+                    scale[i] += OCTAVE
+        else:
+            mode = mode_or_scale
+            scale = [A, B, C, D, E, F, G]
+            if mode not in scale:
+                raise Exception(f"Unknown mode: {mode}")
+            mode_index = scale.index(mode)
+            scale = [n - mode for n in scale[mode_index:]] + [n - mode + OCTAVE for n in scale[:mode_index]]
+            scale = [n + self.key + MIDDLE_A for n in scale]
+        self.scale = scale
+    '''Get a note within the song's current scale/mode/key.
+    scale_degree(int): Note scale degree (1 for key note)'''
+    def get_scale_note(self, scale_degree):
+        return self.scale[(scale_degree - 1) % len(self.scale)] + ((scale_degree - 1) // len(self.scale)) * OCTAVE
+    '''Get a triad/seventh within the song's current scale/mode/key.
+    root_scale_degree(int): Root note scale degree (1 for key note)
+    inversion(int) = 0: Chord inversion
+    seventh(None or DOMINANT or MAJOR or DIMINISHED) = None: Optional seventh to add to the chord'''
+    def get_scale_chord(self, root_scale_degree, inversion = 0, seventh = None):
+        chord = [self.get_scale_note(root_scale_degree), self.get_scale_note(root_scale_degree + 2), self.get_scale_note(root_scale_degree + 4)]
+        if seventh == MAJOR: chord.append(chord[0] + 11)
+        elif seventh == DOMINANT: chord.append(chord[0] + 10)
+        elif seventh == DIMINISHED: chord.append(chord[0] + 9)
+        for _ in range(inversion):
+            chord.append(chord.pop(0) + OCTAVE)
+        return chord
+    '''Get a chord with the given root note and chord quality
+    root_note(int): Root note of the chord
+    quality(list[int]): Chord quality, such as MAJOR, MINOR, or SUSPENDED
+    inversion(int) = 0: Chord inversion
+    seventh(None or DOMINANT or MAJOR or DIMINISHED) = None: Optional seventh to add to the chord'''
+    def get_chord(self, root_note, quality, inversion = 0, seventh = None):
+        if not isinstance(quality, list): raise Exception(f"Unknown chord quality {quality}")
         chord = [n + root_note for n in quality]
         if seventh == MAJOR: chord.append(root_note + 11)
         elif seventh == DOMINANT: chord.append(root_note + 10)
         elif seventh == DIMINISHED: chord.append(root_note + 9)
-        else: raise Exception(f"Unknown seventh: {seventh}")
+        elif not (seventh is None): raise Exception(f"Unknown seventh: {seventh}")
         for _ in range(inversion):
-            chord.append(chord.pop(0) - OCTAVE)
-        return chord
-
-    def get_default_chord_quality(self, scale_degree, mode = None, scale = None):
-        chord =  [self.get_scale_note(scale_degree, 0, mode, scale),
-            self.get_scale_note(scale_degree + 2, 0, mode, scale),
-            self.get_scale_note(scale_degree + 4, 0, mode, scale)]
+            chord.append(chord.pop(0) + OCTAVE)
         return chord
 
 
