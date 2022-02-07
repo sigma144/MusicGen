@@ -14,7 +14,7 @@ def generate_rhythm(beats):
 
 WHOLE_NOTE = 4
 HALF_NOTE = 2
-QUATER_NOTE = 1
+QUARTER_NOTE = 1
 EIGHTH_NOTE = 0.5
 SIXTEENTH_NOTE = 0.25
 
@@ -23,8 +23,15 @@ COMPOUND = 3
 
 class RhythmGen():
 
+    def generate_rhythm_track(self, beats, instrument, pitch=60, meter=2, time_signature=(4, QUARTER_NOTE)):
+        results = self.generate_rhythm_measures([pitch]*beats, meter, time_signature, start_time=0)
+        track = Track(instrument=instrument)
+        for measure in results:
+            for vals in measure:
+                track.notes.append(Note(vals[0], vals[1], vals[2]))
+        return track
     # meter Simple Duple, Simple Triple, Simple Quadruple define how many notes in a beat
-    def generateRhythm(self, pitches, meter, time_signature, start_time):
+    def generate_rhythm_measures(self, pitches, meter, time_signature, start_time):
         # top number tells you how many beats there are in one measure.
         # bottom number means half, quater, eight. etc notes.
         t, b = time_signature
@@ -49,33 +56,5 @@ class RhythmGen():
                 measures.append(measure)
                 measure = []
 
-        print(measures)
         return measures
-
-
-if __name__ == '__main__':
-
-    # there are 4 measures of pitches
-    # pitches  = [60, 61, 60, 61, 60, 61, 60, 61]
-    # pitches  = [60, 61, 62, 60, 61, 62, 60, 61, 62, 60, 61, 62]
-    pitches  = [60, 61, 62, 61, 60, 61, 62, 61, 60, 61, 62, 61, 60, 61, 62, 61]
-    # meter 2 is Simple, 3 is compound
-    meter = 2
-    # how many beats in a measure, and the note type
-    time_signature = (4, QUATER_NOTE)
-    start_time = 0
-    
-    rg = RhythmGen()
-    results = rg.generateRhythm(pitches, meter, time_signature, start_time)
-
-    testmusic = Music()
-    testtrack = Track()
-    # make just 1 track
-    for measure in results:
-        for vals in measure:
-            # Note object takes pitch, time and duration
-            testtrack.notes.append(Note(vals[0], vals[1], vals[2]))
-
-    testmusic.tracks.append(testtrack)
-    create_MIDI(testmusic, 'simple_quad.mid')
     
