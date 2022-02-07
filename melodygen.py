@@ -3,17 +3,24 @@ from midi import create_MIDI
 import music
 from music import Music, Track, Note, OCTAVE
 import random
-import rhythmgen
 
-def melody_from_chords(chords, **config):
+def melody_from_chords(music, chords, **config):
     floor, ceiling = config['range'] if 'range' in config else [60, 72]
-    notes = [copy(n) for c in chords for n in c]
-    notes = put_in_range(notes, floor, ceiling)
-    current_note = random.choice(notes)
+    chord_notes = [copy(n) for c in chords for n in c]
+    chord_notes = put_in_range(chord_notes, floor, ceiling)
+    prev_pitch = random.choice(chord_notes).pitch
+    notes = []
     for c in chords:
         beats = c[0].duration
-        for t in range(beats/2):
-            pass
+        ptime = 0
+        while ptime < beats:
+            pitch = 1000000
+            while pitch < floor or pitch > ceiling:
+                pitch = music.get_scale_note(round(random.normal(prev_pitch, 2)))
+            duration = random.choice([0.5, min(1, beats-ptime)])
+            notes.append(Note(pitch, ptime, duration))
+            ptime += duration
+            prev_pitch = pitch
     return notes
 
 def put_in_range(notes, floor, ceiling):
