@@ -7,11 +7,11 @@ import accomp
 import melodygen
 
 #Chords + Bass
-testmusic = Music()
+testmusic = Music(tempo = 90)
 testtrack = Track(instrument = 49)
 chords = []
 for i in range(50):
-    chord = [Note(n, i*5, 5) for n in testmusic.get_scale_chord(random.randrange(14) + 12, inversion=random.randrange(3))]
+    chord = [Note(n, i*4, 4) for n in testmusic.get_scale_chord(random.randrange(14) + 12, inversion=random.randrange(3))]
     chords.append(chord)
 testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
 testmusic.tracks.append(testtrack)
