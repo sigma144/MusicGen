@@ -4,7 +4,7 @@ import random
 
 class Samples():
 
-    def sample1():
+    def sample1(self):
         sample = Music(key = E)
         testtrack = Track()
         time = 0
@@ -18,7 +18,7 @@ class Samples():
         return sample
 
     # C, Am, Dm, F chord progression
-    def sample2():
+    def sample2(self):
         
         testmusic = Music(tempo=150)
         testtrack = Track(instrument = 0)
@@ -55,7 +55,8 @@ class Samples():
     #     return testmusic, chords
 
     # generates chord progressions in the same scale
-    def chord_prog_generator_scale(progKey = C, numChords = 4):
+    # Returns list[list[int]]
+    def chord_prog_generator_scale(self, progKey = C, numChords = 4):
 
         testmusic = Music(key=progKey)
         chord = []
@@ -63,9 +64,21 @@ class Samples():
 
         for _ in range(numChords):
             for note in testmusic.get_scale_chord(random.randrange(7)-6,
-                inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
+                inversion=random.randrange(4)):
+                #inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
                 chord.append(note)
             chords.append(chord)
             chord = []
 
         return chords
+
+    def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):
+        nchords = []
+        time = 0
+        for c in chords * repetitions:
+            chord = []
+            for pitch in c:
+                chord.append(Note(pitch, time, duration))
+            time += duration
+            nchords.append(chord)
+        return nchords
