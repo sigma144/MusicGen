@@ -20,9 +20,9 @@ class Track:
     '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
     instrument(int): The instrument for this track (see instruments.txt for instrument numbers)
     notes(list[Note]): An optional list of Notes to initialize the track with'''
-    def __init__(self, instrument = 0, notes = None):
+    def __init__(self, instrument = 0, notes = None, drum_kit = False):
         if notes is None: notes = []
-        self.instrument = instrument; self.notes = notes
+        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit
     '''Add a note to the track. Same function signature as the Note constructor.'''
     def add_note(self, pitch, time, duration):
         self.notes.append(Note(pitch, time, duration))

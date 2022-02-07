@@ -4,6 +4,7 @@ from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, 
 from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
 from music import Music, Track, Note
 import random
+from rhythmgen import RhythmGen, QUARTER_NOTE
 
 #Multi-track
 testmusic = Music()
@@ -143,3 +144,19 @@ basstrack = Track(instrument = 39)
 basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS)
 testmusic.tracks.append(basstrack)
 create_MIDI(testmusic, 'rhythmic.mid')
+
+#Drums + Chords
+testmusic = Music()
+testtrack = Track(instrument = 49)
+chords = []
+for i in range(50):
+    chord = [Note(n, i*4, 4) for n in testmusic.get_scale_chord(random.randrange(14) + 12, inversion=random.randrange(3))]
+    chords.append(chord)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
+testmusic.tracks.append(rhythmtrack)
+create_MIDI(testmusic, 'simple_quad.mid')
