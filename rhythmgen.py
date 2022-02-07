@@ -3,6 +3,15 @@ from midiutil.MidiFile import MIDIFile
 from music import Music, Track, Note
 from midi import create_MIDI
 
+import random
+# Old function for demos
+def generate_rhythm(beats):
+    rhythm = []
+    for i in range(beats * 2):
+        if random.randrange(5) >= 2:
+            rhythm.append(i/2)
+    return rhythm
+
 WHOLE_NOTE = 4
 HALF_NOTE = 2
 QUATER_NOTE = 1
