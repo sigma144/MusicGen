@@ -64,8 +64,8 @@ class Samples():
 
         for _ in range(numChords):
             for note in testmusic.get_scale_chord(random.randrange(7)-6,
-                inversion=random.randrange(4)):
-                #inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
+                # inversion=random.randrange(4)):
+                inversion=random.randrange(4), seventh=random.choice([None, DOMINANT, MAJOR, DIMINISHED], weights=(30, 30, 30, 10))):
                 chord.append(note)
             chords.append(chord)
             chord = []
