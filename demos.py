@@ -88,7 +88,6 @@ create_MIDI(testmusic, 'triadr.mid')
 #Messing with rhythms
 testmusic = Music(key = E)
 testtrack = Track()
-drumtrack = Track(instrument=116)
 time = 0
 for i in range(100):
     duration = random.choice([1, 1/2])
@@ -96,9 +95,7 @@ for i in range(100):
         testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(-10, 10)), time, duration))
     time += duration
 testmusic.tracks.append(testtrack)
-for i in range(int(time)*2):
-    if random.randrange(2) == 0:
-        drumtrack.notes.append(Note(music.MIDDLE_C, i/2, 1))
+drumtrack = Track(instrument = 116, notes = rhythmgen.generate_random_rhythm(testtrack.length()))
 testmusic.tracks.append(drumtrack)
 create_MIDI(testmusic, 'rhythm.mid')
 
@@ -147,7 +144,7 @@ basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS)
 testmusic.tracks.append(basstrack)
 create_MIDI(testmusic, 'rhythmic.mid')
 
-#Drums + Chords
+#New Rhythm Generator
 testmusic = Music()
 testtrack = Track(instrument = 49)
 chords = []
@@ -161,7 +158,7 @@ basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
 testmusic.tracks.append(basstrack)
 rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
 testmusic.tracks.append(rhythmtrack)
-create_MIDI(testmusic, 'simple_quad.mid')
+create_MIDI(testmusic, 'drums.mid')
 
 #New Chord Generator
 testmusic = Music(tempo = 85)
@@ -189,9 +186,11 @@ testmusic.tracks.append(arptrack)
 basstrack = Track(instrument = 42)
 basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
 testmusic.tracks.append(basstrack)
-rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
+rhythmtrack = Track(instrument = 117, notes = rhythmgen.generate_random_rhythm(8))
+#rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 8)
 testmusic.tracks.append(rhythmtrack)
 melodytrack = Track(instrument = 73)
 melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
 testmusic.tracks.append(melodytrack)
-create_MIDI(testmusic, 'music.mid')
+create_MIDI(testmusic, 'alltogether.mid')

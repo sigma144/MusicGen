@@ -23,9 +23,30 @@ class Track:
     def __init__(self, instrument = 0, notes = None, drum_kit = False):
         if notes is None: notes = []
         self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit
-    '''Add a note to the track. Same function signature as the Note constructor.'''
-    def add_note(self, pitch, time, duration):
-        self.notes.append(Note(pitch, time, duration))
+    '''Returns a new Track with the notes in this track repeated a number of times in a row.
+    spacing(float): How many beats between repetitions
+    repeats(int): How many repetitions to do'''
+    def repeat(self, repeats, spacing):
+        new_track = Track(self.instrument, [], self.drum_kit)
+        for i in range(repeats):
+            new_track.notes += [Note(n.pitch, n.time + i*spacing, n.duration) for n in self.notes]
+        return new_track
+    '''Get the total number of beats (float) in the track.'''
+    def length(self):
+        latest = 0
+        for n in self.notes:
+            latest = max(latest, n.time + n.duration)
+        return latest
+    '''Place a series of notes at the end of the track.
+    notes(Note|list[Note]): Notes to place. Note pitches and durations will be copied.
+    Note times will be offset by the number of beats currently in the track.'''
+    def append_notes(self, notes):
+        if notes is Note:
+            self.append_notes([notes])
+            return
+        last_beat = self.length
+        for n in notes:
+            self.notes.append(Note(n.pitch, last_beat + n.time, n.duration))
 
 class Music:
     '''Create a new piece of music to be turned into MIDI.
@@ -53,11 +74,11 @@ class Music:
             scale = [n - mode for n in scale[mode_index:]] + [n - mode + OCTAVE for n in scale[:mode_index]]
             scale = [n + self.key + MIDDLE_A for n in scale]
         self.scale = scale
-    '''Get a note within the song's current scale/mode/key.
+    '''Get a note (int) within the song's current scale/mode/key.
     scale_degree(int): Note scale degree (1 for key note)'''
     def get_scale_note(self, scale_degree):
         return self.scale[(scale_degree - 1) % len(self.scale)] + ((scale_degree - 1) // len(self.scale)) * OCTAVE
-    '''Get a triad/seventh within the song's current scale/mode/key.
+    '''Get a triad/seventh (list[int]) within the song's current scale/mode/key.
     root_scale_degree(int): Root note scale degree (1 for key note)
     inversion(int) = 0: Chord inversion
     seventh(None or DOMINANT or MAJOR or DIMINISHED) = None: Optional seventh to add to the chord'''
@@ -69,7 +90,7 @@ class Music:
         for _ in range(inversion):
             chord.append(chord.pop(0) + OCTAVE)
         return chord
-    '''Get a chord with the given root note and chord quality
+    '''Get a chord (list[int]) with the given root note and chord quality
     root_note(int): Root note of the chord
     quality(list[int]): Chord quality, such as MAJOR, MINOR, or SUSPENDED
     inversion(int) = 0: Chord inversion
