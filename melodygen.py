@@ -21,10 +21,17 @@ def melody_from_chords(music, chords, **config):
     prev_deg = random.choice([-3, 0, 2])
     notes = []
     time = 0
+    phrasetime = 0
     for chord in chords:
         beats = chord[0].duration
         ptime = 0
+        PHRASE_LEN = 8
         while ptime < beats:
+            if phrasetime > nrandom.normal(PHRASE_LEN, 1):
+                duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
+                ptime += duration
+                phrasetime -= PHRASE_LEN
+                continue
             pitch = 1000000
             while pitch < floor or pitch > ceiling or \
             check_clash(chord, pitch) == 1 and random.randrange(4) <= 3 or \
@@ -35,6 +42,7 @@ def melody_from_chords(music, chords, **config):
             duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
             notes.append(Note(pitch, ptime + time, duration))
             ptime += duration
+            phrasetime += duration
             prev_deg = scale_deg
         time += beats
     return notes
