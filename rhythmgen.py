@@ -5,12 +5,6 @@ from midi import create_MIDI
 
 import random
 # Old function for demos
-def generate_random_rhythm(beats):
-    new_track = Track()
-    for i in range(int(beats) * 2):
-        if i == 0 or random.randrange(5) >= 2:
-            new_track.notes.append(Note(60, i/2, 1))
-    return new_track.notes
 
 WHOLE_NOTE = 4
 HALF_NOTE = 2
@@ -20,6 +14,17 @@ SIXTEENTH_NOTE = 0.25
 
 SIMPLE = 2
 COMPOUND = 3
+
+def generate_random_rhythm(beats, meter=SIMPLE):
+    new_track = Track()
+    for i in range(int(beats) * 2):
+        if i == 0 or random.randrange(5) >= 2:
+            time = i/2
+            if meter == COMPOUND:
+                if i % 2 == 1:
+                    time = time - 1/2 + 2/3
+            new_track.notes.append(Note(60, time, 1))
+    return new_track.notes
 
 class RhythmGen():
 
