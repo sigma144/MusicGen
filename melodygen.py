@@ -22,12 +22,13 @@ def melody_from_chords(music, chords, **config):
     notes = []
     time = 0
     phrasetime = 0
+    duration = 0
     for chord in chords:
         beats = chord[0].duration
         ptime = 0
-        PHRASE_LEN = 8
+        PHRASE_LEN = 7
         while ptime < beats:
-            if phrasetime > nrandom.normal(PHRASE_LEN, 1):
+            if duration > 0.5 and phrasetime > nrandom.normal(PHRASE_LEN, 1):
                 duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
                 ptime += duration
                 phrasetime -= PHRASE_LEN
