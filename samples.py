@@ -75,10 +75,12 @@ class Samples():
     def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):
         nchords = []
         time = 0
-        for c in chords * repetitions:
+        if type(duration) == int:
+            duration = [duration]
+        for i, c in enumerate(chords * repetitions):
             chord = []
             for pitch in c:
-                chord.append(Note(pitch, time, duration))
-            time += duration
+                chord.append(Note(pitch, time, duration[i % len(duration)]))
+            time += duration[i % len(duration)]
             nchords.append(chord)
         return nchords
