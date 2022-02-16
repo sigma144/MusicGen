@@ -283,3 +283,11 @@ melodytrack = Track(instrument = 73)
 melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
 testmusic.tracks.append(melodytrack)
 create_MIDI(testmusic, 'morechords.mid')
+
+#Testing drum kits
+testmusic = Music(tempo = 85)
+rhythmtrack = Track(drum_kit = False, notes = rhythmgen.generate_random_rhythm(8))
+#rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 8)
+testmusic.tracks.append(rhythmtrack)
+create_MIDI(testmusic, 'drumkit.mid')

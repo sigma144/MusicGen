@@ -8,7 +8,7 @@ outdir(string) = "midifiles": Folder to put the MIDI file in'''
 def create_MIDI(music, outfile='output.mid', outdir='midifiles'):
     mf = MIDIFile(len(music.tracks))
     drum_tracks = [t for t in music.tracks if t.drum_kit]
-    combined_track = Track(drum_kit=True) #TODO: Need to fix
+    combined_track = Track(drum_kit=True)
     for t in drum_tracks: combined_track.notes += t.notes
     for trackn, track in enumerate(music.tracks):
         if track in drum_tracks: continue
