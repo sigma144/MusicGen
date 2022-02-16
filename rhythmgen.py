@@ -110,8 +110,9 @@ class RhythmGen():
     
 if __name__ == '__main__':
 
-    rhythmtracks = RhythmGen().gen_composed_rhythm()
-    testmusic = Music(tempo=60)
-    for rhythmtrack in rhythmtracks:
-        testmusic.tracks.append(rhythmtrack)
-    create_MIDI(testmusic, 'rgythms4.mid')
+    for  i in range(20):
+        rhythmtracks = RhythmGen().gen_composed_rhythm()
+        testmusic = Music(tempo=60)
+        for rhythmtrack in rhythmtracks:
+            testmusic.tracks.append(rhythmtrack)
+        create_MIDI(testmusic, 'rgythms' + str(i) + '.mid')
