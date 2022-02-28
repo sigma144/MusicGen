@@ -4,7 +4,7 @@ from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, 
 from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
 from music import Music, Track, Note
 import random
-from rhythmgen import COMPOUND, RhythmGen, QUARTER_NOTE
+from rhythmgen import COMPOUND, RhythmGen, QUARTER_NOTE, generate_random_rhythm_track
 from samples import Samples
 import melodygen
 
@@ -288,12 +288,8 @@ create_MIDI(testmusic, 'morechords.mid')
 
 #Testing drum kits
 testmusic = Music(tempo = 180)
-rhythmtrack = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=54))
-testmusic.tracks.append(rhythmtrack)
-rhythmtrack2 = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=38))
-testmusic.tracks.append(rhythmtrack2)
-rhythmtrack3 = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=35))
-testmusic.tracks.append(rhythmtrack3)
+testtrack = generate_random_rhythm_track(16)
+testmusic.tracks.append(testtrack)
 create_MIDI(testmusic, 'drumkit.mid')
 
 #Concatenation
@@ -331,10 +327,6 @@ melodytrack.notes = melodygen.melody_from_chords(testmusic2, chords, meter=COMPO
 testmusic2.tracks.append(melodytrack)
 #Part 3
 testmusic3 = Music(tempo = 180)
-rhythmtrack = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=54))
-testmusic3.tracks.append(rhythmtrack)
-rhythmtrack2 = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=38))
-testmusic3.tracks.append(rhythmtrack2)
-rhythmtrack3 = Track(drum_kit = True, notes = rhythmgen.generate_random_rhythm(16, note=35))
-testmusic3.tracks.append(rhythmtrack3)
+testtrack = generate_random_rhythm_track(16)
+testmusic3.tracks.append(testtrack)
 create_MIDI([testmusic1, testmusic2, testmusic3, testmusic1], 'concat.mid')

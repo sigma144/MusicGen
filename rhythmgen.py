@@ -16,16 +16,23 @@ SIXTEENTH_NOTE = 0.25
 SIMPLE = 2
 COMPOUND = 3
 
-def generate_random_rhythm(beats, meter=SIMPLE, note=60):
-    new_track = Track()
+def generate_random_rhythm(beats, meter=SIMPLE, instrument=60):
+    notes = []
     for i in range(int(beats) * 2):
         if i == 0 or random.randrange(5) >= 2:
             time = i/2
             if meter == COMPOUND:
                 if i % 2 == 1:
                     time = time - 1/2 + 2/3
-            new_track.notes.append(Note(note, time, 1))
-    return new_track.notes
+            notes.append(Note(instrument, time, 1))
+    return notes
+
+def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=3):
+    track = Track(0, [], True)
+    for _ in range(num_instr):
+        notes = generate_random_rhythm(beats, meter, random.randint(35, 87))
+        track.notes += notes
+    return track
 
 class RhythmGen():
 
