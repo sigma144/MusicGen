@@ -31,7 +31,7 @@ class RhythmGen():
 
     def generate_rhythm_track(self, beats, instrument, pitch=60, meter=2, time_signature=(4, QUARTER_NOTE)):
         results = self.generate_rhythm_measures([pitch]*beats, meter, time_signature, start_time=0)
-        track = Track(instrument=instrument)
+        track = Track(instrument=instrument, drum_kit=True)
         for measure in results:
             for vals in measure:
                 track.notes.append(Note(vals[0], vals[1], vals[2]))
@@ -45,37 +45,22 @@ class RhythmGen():
         # note_tracks = [WHOLE_NOTE, HALF_NOTE, QUARTER_NOTE, EIGHTH_NOTE, SIXTEENTH_NOTE]
         # randmaly pick from the note set to form different tracks
         # selected_tracks = [WHOLE_NOTE]
-        track_nums = random.randint(2, 5)
+        track_nums = random.randint(3, 5)
         selected_tracks = random.sample(note_tracks, track_nums)
         # make a track for each selected ones
         for selected_track in selected_tracks:
-            # suit_instrs = [9, 10, 11, 12, 46, 79, 52, 53, 54, 108, 109, 110, 108, 113, 114, 115, 116, 117, 118, 123, 126]
-            suit_instrs = [114, 115, 116, 117, 118]
-            # suit_instrs = range(0, 127)
+            suit_instrs = [115, 116, 117, 118]
             track = []
             instrument = random.choice(suit_instrs)
             beats = 16
-            pitch = random.randint(60, 66)
+            pitch = random.randint(35, 87)
             meter = random.randint(1, 10) # randoamly taken from 1, 2, 3, in crease the number to lower the chance of division
-            
             # 4 beats and every beat is quater note, this is a very standard one, 4 beats with anything above would not
             # work, for instance, 4 beats with half note, will result in 8 in time length.
-            if selected_track == WHOLE_NOTE:
-                time_signature = (4, WHOLE_NOTE) 
-                beats = int(beats / 4)
-            if selected_track == HALF_NOTE:
-                time_signature = (4, HALF_NOTE)
-                beats = int(beats / 2)
-            if selected_track == QUARTER_NOTE:
-                time_signature = (4, QUARTER_NOTE)
-            if selected_track == EIGHTH_NOTE:
-                time_signature = (4, EIGHTH_NOTE)
-                beats = int(beats * 2)
-            if selected_track == SIXTEENTH_NOTE:
-                time_signature = (4, SIXTEENTH_NOTE)
-                beats = int(beats * 4)
+            time_signature = (4, selected_track)
+            beats = int(beats / selected_track)
             # randamly pick chord as well, basick define a measure of beats out
-            print("track: ", instrument, meter, time_signature)
+            # print("track: ", instrument, meter, time_signature)
             track = self.generate_rhythm_track(beats, instrument, pitch, meter, time_signature)
             tracks.append(track)
         return tracks
@@ -109,8 +94,8 @@ class RhythmGen():
         return measures
     
 if __name__ == '__main__':
-
-    for  i in range(20):
+    for i in range(3):
+    #for  i in range(20):
         rhythmtracks = RhythmGen().gen_composed_rhythm()
         testmusic = Music(tempo=60)
         for rhythmtrack in rhythmtracks:
