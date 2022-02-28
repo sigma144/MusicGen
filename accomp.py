@@ -16,7 +16,7 @@ def accomp_from_chords(chords, style=CHORDS, meter=rhythmgen.SIMPLE, **config):
         notes = put_in_range(notes, floor, ceiling)
     elif style == RHYTHMIC:
         floor, ceiling = config['range'] if 'range' in config else [60, 72]
-        rhythm  = [n.time for n in rhythmgen.generate_random_rhythm(beats = chords[0][0].duration * 2, meter=meter)]
+        rhythm  = [n.time for n in rhythmgen.generate_random_rhythm(beats = chords[0][0].duration * 2, meter=meter, scales=[0.5], density=0.7)]
         notes = []
         time = 0
         for c in chords:
@@ -44,7 +44,7 @@ def accomp_from_chords(chords, style=CHORDS, meter=rhythmgen.SIMPLE, **config):
             time += c[0].duration
     elif style == RHYTHMIC_BASS:
         floor, ceiling = config['range'] if 'range' in config else [40, 52]
-        rhythm  = [n.time for n in rhythmgen.generate_random_rhythm(beats = chords[0][0].duration * 2, meter=meter)]
+        rhythm  = [n.time for n in rhythmgen.generate_random_rhythm(beats = chords[0][0].duration * 2, meter=meter, scales=[0.5], density=0.5)]
         notes = []
         time = 0
         for c in chords:
