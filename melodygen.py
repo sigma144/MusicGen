@@ -4,6 +4,7 @@ import music
 from music import Music, Track, Note, OCTAVE
 from numpy import random as nrandom
 import random
+from rhythmgen import SIMPLE, COMPOUND
 
 def check_clash(chord, pitch):
     if any([(n.pitch - pitch) % 12 == 0 for n in chord]):
@@ -14,7 +15,7 @@ def check_clash(chord, pitch):
         return 2
     return 0
 
-def melody_from_chords(music, chords, **config):
+def melody_from_chords(music, chords, meter=SIMPLE, **config):
     floor, ceiling = config['range'] if 'range' in config else [60, 72]
     chord_notes = [copy(n) for c in chords for n in c]
     chord_notes = put_in_range(chord_notes, floor, ceiling)
@@ -22,12 +23,13 @@ def melody_from_chords(music, chords, **config):
     notes = []
     time = 0
     phrasetime = 0
+    duration = 0
     for chord in chords:
         beats = chord[0].duration
         ptime = 0
-        PHRASE_LEN = 8
+        PHRASE_LEN = 7
         while ptime < beats:
-            if phrasetime > nrandom.normal(PHRASE_LEN, 1):
+            if duration > 0.5 and phrasetime > nrandom.normal(PHRASE_LEN, 1):
                 duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
                 ptime += duration
                 phrasetime -= PHRASE_LEN
@@ -40,7 +42,10 @@ def melody_from_chords(music, chords, **config):
                 scale_deg = round(nrandom.normal(prev_deg, 2))
                 pitch = music.get_scale_note(scale_deg)
             duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
-            notes.append(Note(pitch, ptime + time, duration))
+            if meter == COMPOUND and int(ptime) != ptime and ptime+time > 1/2:
+                notes.append(Note(pitch, ptime + time - 1/2 + 2/3, duration))
+            else:
+                notes.append(Note(pitch, ptime + time, duration))
             ptime += duration
             phrasetime += duration
             prev_deg = scale_deg
