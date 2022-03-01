@@ -1,4 +1,4 @@
-from midi import create_MIDI, create_MIDI_test
+from midi import create_MIDI
 import music, rhythmgen, accomp
 from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE
 from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
@@ -24,11 +24,7 @@ class Templates():
     # A B
     def template_AB(section1tracks, section2tracks):
         
-        testmusic = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
-        testmusic.sections.append(section1tracks)
-        testmusic.sections.append(section2tracks)
-        return testmusic
-
+        pass
 
     # A B A
     def template_ABA(self):
@@ -109,6 +105,8 @@ if __name__ == "__main__":
     # song = Templates.template_AB(testmusic1, testmusic2) 
     # create_MIDI(song, "template_AB")
 
-    song = Templates.template_AB(testmusic1.tracks, testmusic2.tracks) 
-    create_MIDI_test(song, "template_AB")
+    # song = Templates.template_AB(testmusic1, testmusic2) 
+    create_MIDI([testmusic1, testmusic2], "template_AB.mid")
+
+
 
