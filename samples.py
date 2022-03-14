@@ -36,24 +36,23 @@ class Samples():
 
         return testmusic
     def chord_prog_generator_scale(self, progKey = C, numChords = 4):
-
         testmusic = Music(key=progKey)
         chord = []
         chords = []
-        choices = []
+        prev_deg, prev_qual = None, None
         for _ in range(numChords):
-            if random.randrange(4) == 0:
-                testmusic.set_scale(MINOR_MODE)
-                choices = [3, 6, 7]
-            else:
-                testmusic.set_scale(MAJOR_MODE)
-                choices = [1, 2, 3, 4, 5, 6]
+            testmusic.set_scale(MAJOR_MODE)
+            choices = [1, 2, 3, -3, 4, 5, 6, -6, -7]
             chord = [0, 1, 2, 3] #Purposely out-of-scale chord to trigger the loop
-            while not testmusic.is_in_scale(chord):
-                chord = testmusic.get_scale_chord(random.choice(choices),
-                inversion=random.randrange(4),
-                seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
+            deg, qual = testmusic.get_following_chord_type(prev_deg, prev_qual)
+            chord = testmusic.get_chord(testmusic.get_scale_note(deg), qual)
+            #while not testmusic.is_in_scale(chord):
+                #chord = testmusic.get_scale_chord(random.choice(choices),
+                #inversion=random.randrange(4),
+                #seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
             chords.append(chord)
+            prev_deg, prev_qual = deg, qual
+            print(deg, qual)
         return chords
 
     def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):
