@@ -3,6 +3,8 @@ MINOR_MODE = A; MAJOR_MODE = C
 MAJOR = [0, 4, 7]; MINOR = [0, 3, 7]; DOMINANT = MINOR; DIMINISHED = [0, 3, 6]; SUSPENDED = [0, 5, 7]; AUGMENTED = [0, 4, 8]
 FLAT = -1; NATURAL = 0; SHARP = 1
 MIDDLE_A = 57; MIDDLE_C = 60
+from chorddist import CHORD_DIST_MAJOR, CHORD_DIST_MINOR
+import random
 
 class Note:
     '''Create a music note to add to a Track object.
@@ -56,20 +58,34 @@ class Music:
     '''Get a note within the song's current scale/mode/key.
     scale_degree(int): Note scale degree (1 for key note)'''
     def get_scale_note(self, scale_degree):
-        return self.scale[(scale_degree - 1) % len(self.scale)] + ((scale_degree - 1) // len(self.scale)) * OCTAVE
-    '''Get a triad/seventh within the song's current scale/mode/key.
+        note = self.scale[(abs(scale_degree) - 1) % len(self.scale)] + ((abs(scale_degree) - 1) // len(self.scale)) * OCTAVE
+        if scale_degree < 0: note -= 1
+        return note
+    '''Get a triad/seventh (list[int]) within the song's current scale/mode/key.
     root_scale_degree(int): Root note scale degree (1 for key note)
     inversion(int) = 0: Chord inversion
     seventh(None or DOMINANT or MAJOR or DIMINISHED) = None: Optional seventh to add to the chord'''
     def get_scale_chord(self, root_scale_degree, inversion = 0, seventh = None):
+        prev_scale = self.scale
+        if root_scale_degree < 0: self.set_scale(MINOR_MODE)
         chord = [self.get_scale_note(root_scale_degree), self.get_scale_note(root_scale_degree + 2), self.get_scale_note(root_scale_degree + 4)]
+        if root_scale_degree < 0: self.scale = prev_scale
         if seventh == MAJOR: chord.append(chord[0] + 11)
         elif seventh == DOMINANT: chord.append(chord[0] + 10)
         elif seventh == DIMINISHED: chord.append(chord[0] + 9)
         for _ in range(inversion):
             chord.append(chord.pop(0) + OCTAVE)
         return chord
-    '''Get a chord with the given root note and chord quality
+    def get_following_chord_type(self, prev_degree, prev_quality):
+        if prev_quality == MAJOR and prev_degree in CHORD_DIST_MAJOR:
+            dist = CHORD_DIST_MAJOR[prev_degree]
+        elif prev_quality == MINOR and prev_degree in CHORD_DIST_MINOR:
+            dist = CHORD_DIST_MINOR[prev_degree]
+        else:
+            dist = CHORD_DIST_MAJOR[5]
+        deg, qual, _ = self.choose_from_dist(dist, p=[t[2] for t in dist])
+        return deg, qual
+    '''Get a chord (list[int]) with the given root note and chord quality
     root_note(int): Root note of the chord
     quality(list[int]): Chord quality, such as MAJOR, MINOR, or SUSPENDED
     inversion(int) = 0: Chord inversion
@@ -85,5 +101,12 @@ class Music:
             chord.append(chord.pop(0) + OCTAVE)
         return chord
 
+
+    def choose_from_dist(self, choices, p):
+        p = [n / sum(p) for n in p]
+        r = random.random()
+        for i, n in enumerate(p):
+            r -= n
+            if r <= 0: return choices[i]
 
 
