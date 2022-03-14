@@ -4,7 +4,9 @@ from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, 
 from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
 from music import Music, Track, Note
 import random
-from rhythmgen import RhythmGen, QUARTER_NOTE
+from rhythmgen import COMPOUND, RhythmGen, QUARTER_NOTE, generate_random_rhythm_track
+from samples import Samples
+import melodygen
 
 #Multi-track
 testmusic = Music()
@@ -86,7 +88,6 @@ create_MIDI(testmusic, 'triadr.mid')
 #Messing with rhythms
 testmusic = Music(key = E)
 testtrack = Track()
-drumtrack = Track(instrument=116)
 time = 0
 for i in range(100):
     duration = random.choice([1, 1/2])
@@ -94,9 +95,7 @@ for i in range(100):
         testtrack.notes.append(Note(testmusic.get_scale_note(random.randrange(-10, 10)), time, duration))
     time += duration
 testmusic.tracks.append(testtrack)
-for i in range(int(time)*2):
-    if random.randrange(2) == 0:
-        drumtrack.notes.append(Note(music.MIDDLE_C, i/2, 1))
+drumtrack = Track(instrument = 116, notes = rhythmgen.generate_random_rhythm(testtrack.length()))
 testmusic.tracks.append(drumtrack)
 create_MIDI(testmusic, 'rhythm.mid')
 
@@ -145,7 +144,7 @@ basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS)
 testmusic.tracks.append(basstrack)
 create_MIDI(testmusic, 'rhythmic.mid')
 
-#Drums + Chords
+#New Rhythm Generator
 testmusic = Music()
 testtrack = Track(instrument = 49)
 chords = []
@@ -159,4 +158,167 @@ basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
 testmusic.tracks.append(basstrack)
 rhythmtrack = RhythmGen().generate_rhythm_track(basstrack.notes[-1].time + 4, 117)
 testmusic.tracks.append(rhythmtrack)
-create_MIDI(testmusic, 'simple_quad.mid')
+create_MIDI(testmusic, 'drums.mid')
+
+#New Chord Generator
+testmusic = Music(tempo = 85)
+testtrack = Track(instrument = 49)
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=8)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+arptrack = Track(instrument = 46)
+arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO)
+testmusic.tracks.append(arptrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+create_MIDI(testmusic, 'chordgen.mid')
+
+#Testing Melody Generator
+testmusic = Music(tempo = 85)
+testtrack = Track(instrument = 49)
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=8)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, 'melody.mid')
+
+#All together
+testmusic = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=8)
+testtrack = Track(instrument = 49)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+arptrack = Track(instrument = 46)
+arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO)
+testmusic.tracks.append(arptrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+rhythmtrack = generate_random_rhythm_track(4)
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 4 + 1, 4)
+testmusic.tracks.append(rhythmtrack)
+accomptrack = Track(instrument = 24)
+accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC)
+testmusic.tracks.append(accomptrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, 'alltogether.mid')
+
+#All together with rhythmic chords & random key, & compound
+testmusic = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=8)
+testtrack = Track(instrument = 49)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+arptrack = Track(instrument = 46)
+arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO, meter=COMPOUND)
+testmusic.tracks.append(arptrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+rhythmtrack = generate_random_rhythm_track(4, meter=COMPOUND)
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 4 + 1, 4)
+testmusic.tracks.append(rhythmtrack)
+accomptrack = Track(instrument = 24)
+accomptrack.notes = accomp.accomp_from_chords(chords, accomp.RHYTHMIC, rhythmgen.COMPOUND)
+testmusic.tracks.append(accomptrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, rhythmgen.COMPOUND)
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, 'alltogethercomp.mid')
+
+#Random Instruments
+testmusic = Music(tempo = 150)
+testtrack = Track(instrument = random.randrange(115))
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=8)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+basstrack = Track(instrument = random.randrange(115))
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS, meter=COMPOUND)
+testmusic.tracks.append(basstrack)
+rhythmtrack = Track(instrument = random.randrange(115, 119), notes = rhythmgen.generate_random_rhythm(8, meter=COMPOUND))
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 8)
+testmusic.tracks.append(rhythmtrack)
+rhythmtrack2 = Track(instrument = random.randrange(115, 119), notes = rhythmgen.generate_random_rhythm(8, meter=COMPOUND))
+rhythmtrack2 = rhythmtrack2.repeat(testtrack.length() // 8 + 1, 8)
+testmusic.tracks.append(rhythmtrack2)
+accomptrack = Track(instrument = random.randrange(115))
+accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC, meter=COMPOUND)
+testmusic.tracks.append(accomptrack)
+melodytrack = Track(instrument = random.randrange(115))
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=COMPOUND)
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, 'instruments.mid')
+
+#Trying out different chord duration
+testmusic = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=5), duration=[4, 4, 4, 2, 2], repetitions=8)
+testtrack = Track(instrument = 49)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(testtrack)
+arptrack = Track(instrument = 46)
+arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO)
+testmusic.tracks.append(arptrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic.tracks.append(basstrack)
+rhythmtrack = Track(instrument = 117, notes = rhythmgen.generate_random_rhythm(8))
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 8)
+testmusic.tracks.append(rhythmtrack)
+accomptrack = Track(instrument = 24)
+accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC)
+testmusic.tracks.append(accomptrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, 'morechords.mid')
+
+#Testing drum kits
+testmusic = Music(tempo = 180)
+testtrack = generate_random_rhythm_track(16)
+testmusic.tracks.append(testtrack)
+create_MIDI(testmusic, 'drumkit.mid')
+
+#Concatenation
+#Part 1
+testmusic1 = Music(tempo = 100)
+testtrack = Track(instrument = 49)
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic1.key, numChords=4), duration=4, repetitions=2)
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic1.tracks.append(testtrack)
+basstrack = Track(instrument = 42)
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
+testmusic1.tracks.append(basstrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic1, chords)
+testmusic1.tracks.append(melodytrack)
+#Part 2
+testmusic2 = Music(tempo = 150)
+testtrack = Track(instrument = random.randrange(115))
+testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+basstrack = Track(instrument = random.randrange(115))
+basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS)
+testmusic2.tracks.append(basstrack)
+rhythmtrack = Track(instrument = random.randrange(115, 119), notes = rhythmgen.generate_random_rhythm(8, meter=COMPOUND))
+rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8, 8)
+testmusic2.tracks.append(rhythmtrack)
+rhythmtrack2 = Track(instrument = random.randrange(115, 119), notes = rhythmgen.generate_random_rhythm(8, meter=COMPOUND))
+rhythmtrack2 = rhythmtrack2.repeat(testtrack.length() // 8, 8)
+testmusic2.tracks.append(rhythmtrack2)
+accomptrack = Track(instrument = random.randrange(115))
+accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC, meter=COMPOUND)
+testmusic2.tracks.append(accomptrack)
+melodytrack = Track(instrument = random.randrange(115))
+melodytrack.notes = melodygen.melody_from_chords(testmusic2, chords, meter=COMPOUND)
+testmusic2.tracks.append(melodytrack)
+#Part 3
+testmusic3 = Music(tempo = 180)
+testtrack = generate_random_rhythm_track(16)
+testmusic3.tracks.append(testtrack)
+create_MIDI([testmusic1, testmusic2, testmusic3, testmusic1], 'concat.mid')
