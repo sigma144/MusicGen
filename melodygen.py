@@ -34,13 +34,17 @@ def melody_from_chords(music, chords, meter=SIMPLE, **config):
                 ptime += duration
                 phrasetime -= PHRASE_LEN
                 continue
-            pitch = 1000000
+            pitch = 1000000 # To trigger while loop
             while pitch < floor or pitch > ceiling or \
             check_clash(chord, pitch) == 1 and random.randrange(4) <= 3 or \
             check_clash(chord, pitch) == 2 and random.randrange(2) == 0 or \
             prev_deg == scale_deg and random.randrange(3) <= 1:  #Reduce repetition
                 scale_deg = round(nrandom.normal(prev_deg, 2))
                 pitch = music.get_scale_note(scale_deg)
+                for n in chord:
+                    if not music.is_in_scale(n.pitch) and abs(n.pitch - pitch) % 12 in [1, 11]:
+                        pitch = n.pitch
+                        break
             duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
             if meter == COMPOUND and int(ptime) != ptime and ptime+time > 1/2:
                 notes.append(Note(pitch, ptime + time - 1/2 + 2/3, duration))

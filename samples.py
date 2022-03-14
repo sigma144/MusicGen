@@ -1,4 +1,4 @@
-from music import A, MIDDLE_A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE, DOMINANT, DIMINISHED, AUGMENTED, SUSPENDED, MAJOR, MINOR
+from music import A, MIDDLE_A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE, DOMINANT, DIMINISHED, AUGMENTED, SUSPENDED, MAJOR, MINOR, MAJOR_MODE, MINOR_MODE
 from music import Music, Track, Note
 import random
 
@@ -35,41 +35,25 @@ class Samples():
         testmusic.tracks.append(testtrack)
 
         return testmusic
-
-    # # generates random chord progressions
-    # def chord_prog_generator_rand():
-
-    #     testmusic = Music()
-    #     testtrack = Track(instrument = 0)
-    #     duration = 3
-    #     numChords = 4
-    #     chords = []
-
-    #     for i in range(numChords):
-    #         for n in testmusic.get_chord(random.randrange(50, 70), quality=random.choice([MINOR, MAJOR, DIMINISHED, AUGMENTED, SUSPENDED]),
-    #             inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
-    #             testtrack.notes.append(Note(n, i*duration, duration))
-    #             chords.append(n)
-    #     testmusic.tracks.append(testtrack)
-
-    #     return testmusic, chords
-
-    # generates chord progressions in the same scale
-    # Returns list[list[int]]
     def chord_prog_generator_scale(self, progKey = C, numChords = 4):
 
         testmusic = Music(key=progKey)
         chord = []
         chords = []
-
+        choices = []
         for _ in range(numChords):
-            for note in testmusic.get_scale_chord(random.randrange(6)-6,
-                inversion=random.randrange(4)):
-                #inversion=random.randrange(4), seventh=random.choice([None, None, DOMINANT, MAJOR, DIMINISHED])):
-                chord.append(note)
+            if random.randrange(4) == 0:
+                testmusic.set_scale(MINOR_MODE)
+                choices = [3, 6, 7]
+            else:
+                testmusic.set_scale(MAJOR_MODE)
+                choices = [1, 2, 3, 4, 5, 6]
+            chord = [0, 1, 2, 3] #Purposely out-of-scale chord to trigger the loop
+            while not testmusic.is_in_scale(chord):
+                chord = testmusic.get_scale_chord(random.choice(choices),
+                inversion=random.randrange(4),
+                seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
             chords.append(chord)
-            chord = []
-
         return chords
 
     def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):

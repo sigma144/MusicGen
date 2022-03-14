@@ -106,6 +106,17 @@ class Music:
         for _ in range(inversion):
             chord.append(chord.pop(0) + OCTAVE)
         return chord
-
+    '''Determine (bool) if note(s) are in the song scale.
+    pitch_or_chord(int or list[int]): The notes to check
+    scale(list[int] or None): The scale to check against (defaults to song scale)'''
+    def is_in_scale(self, pitch_or_chord, scale=None):
+        scale = scale or self.scale
+        scale = [n % OCTAVE for n in scale]
+        if not isinstance(pitch_or_chord, list):
+            pitch_or_chord = [pitch_or_chord]
+        for n in pitch_or_chord:
+            if n % 12 not in scale:
+                return False
+        return True
 
 
