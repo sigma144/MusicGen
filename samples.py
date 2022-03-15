@@ -1,6 +1,7 @@
 from music import A, MIDDLE_A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE, DOMINANT, DIMINISHED, AUGMENTED, SUSPENDED, MAJOR, MINOR, MAJOR_MODE, MINOR_MODE
 from music import Music, Track, Note
 import random
+import time
 
 class Samples():
 
@@ -35,7 +36,9 @@ class Samples():
         testmusic.tracks.append(testtrack)
 
         return testmusic
-    def chord_prog_generator_scale(self, progKey = C, numChords = 4):
+    def chord_prog_generator_scale(self, progKey = C, numChords = 4, randSeed = time.time()):
+
+        random.seed(randSeed)
 
         testmusic = Music(key=progKey)
         chord = []

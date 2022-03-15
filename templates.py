@@ -8,30 +8,13 @@ import random
 from rhythmgen import RhythmGen, QUARTER_NOTE
 from samples import Samples
 import melodygen
+import time
+from datetime import datetime
 
 
 
-templateTypes = {"A", "AB", "ABA"}
 
-
-# section_info
-
-# numChords
-# duration
-# repetitions
-# chords_instrument
-
-# arpeggio_instrument
-
-# bass_instrument
-
-# rhythm_instrument
-
-# accomp_instrument
-
-# melody_instrument
-
-
+templateTypes = ["A", "AB", "ABA"]
 
 class Section:
 
@@ -98,6 +81,8 @@ class Template():
     sections (list[Section]): a list of Section objects
     '''
     def __init__(self, templateType, sections):
+        if templateType not in templateType:
+            print("Invalid template type used")
         self.templateType = templateType
         self.sections = sections
 
@@ -114,15 +99,26 @@ class Template():
 
         # FIXME if a section is repeated, add it to list
         sections = self.sections
+        randSeeds = []
+
+        if self.templateType == "A":
+            randSeeds.append(time.time())
+
+        if self.templateType == "AB":
+            randSeeds.append(time.time())
+            randSeeds.append(time.time())
+
         if self.templateType == "ABA":
             sections.append(sections[0])
+            randSeeds.append(time.time())
+            randSeeds.append(time.time())
+            randSeeds.append(randSeeds[0])
 
         all_sections = []
-        for section in sections:
+        for section, randSeed in zip(sections, randSeeds):
 
-            #All together with rhythmic chords & random key
             testmusic = Music(tempo=section.get_tempo(), key=section.get_key())
-            chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=section.get_num_chords()), duration=section.get_chords_duration(), repetitions=section.get_chords_repetitions())
+            chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=section.get_num_chords(), randSeed=randSeed), duration=section.get_chords_duration(), repetitions=section.get_chords_repetitions())
             testtrack = Track(instrument=section.get_chords_instrument())
             testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
             testmusic.tracks.append(testtrack)
