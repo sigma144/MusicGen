@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 
-templateTypes = ["A", "AB", "ABA"]
+templateTypes = ["A", "AB", "ABA", "ABC", "ABCD"]
 
 class Section:
 
@@ -23,7 +23,7 @@ class Section:
     '''
     def __init__(self, tempo=100, key=C, chords_instrument=49, num_chords=4,
         chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
-        rhythm_instrument=117, accomp_instrument=24, melody_instrument=73):
+        rhythm_instrument=117, num_beats=8, accomp_instrument=24, melody_instrument=73):
 
         self.tempo = tempo
         self.key = key
@@ -34,6 +34,7 @@ class Section:
         self.arpeggio_instrument = arpeggio_instrument
         self.bass_instrument = bass_instrument
         self.rhythm_instrument = rhythm_instrument
+        self.num_beats = num_beats
         self.accomp_instrument = accomp_instrument
         self.melody_instrument = melody_instrument
     
@@ -64,14 +65,15 @@ class Section:
     def get_rhythm_instrument(self):
         return self.rhythm_instrument
 
+    def get_num_beats(self):
+        return self.num_beats
+
     def get_accomp_instrument(self):
         return self.accomp_instrument
 
     def get_melody_instrument(self):
         return self.melody_instrument
     
-
-
 
 
 class Template():
@@ -97,22 +99,19 @@ class Template():
            print("Invalid sections/templateType combination")
            return []
 
-        # FIXME if a section is repeated, add it to list
         sections = self.sections
         randSeeds = []
+        if len(list(self.templateType)) == len(self.sections):
+            for _ in range(len(self.sections)):
+                randSeeds.append(time.time())
 
-        if self.templateType == "A":
-            randSeeds.append(time.time())
-
-        if self.templateType == "AB":
-            randSeeds.append(time.time())
-            randSeeds.append(time.time())
-
+        # If a section is repeated, add it to the list
         if self.templateType == "ABA":
             sections.append(sections[0])
             randSeeds.append(time.time())
             randSeeds.append(time.time())
             randSeeds.append(randSeeds[0])
+
 
         all_sections = []
         for section, randSeed in zip(sections, randSeeds):
@@ -128,7 +127,7 @@ class Template():
             basstrack = Track(instrument=section.get_bass_instrument())
             basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
             testmusic.tracks.append(basstrack)
-            rhythmtrack = Track(instrument=section.get_rhythm_instrument(), notes = rhythmgen.generate_random_rhythm(8))
+            rhythmtrack = Track(instrument=section.get_rhythm_instrument(), notes = rhythmgen.generate_random_rhythm(section.get_num_beats()))
             rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 4)
             testmusic.tracks.append(rhythmtrack)
             accomptrack = Track(instrument=section.get_accomp_instrument())
@@ -142,134 +141,49 @@ class Template():
 
         return all_sections
 
-    
-
-
-    # # Choose template, key of song, tempo, 
-    # def choose_template(template = templateTypes["AB"]):
-    #     pass
-
-    # # A
-    # def template_A(section1):
-    #     return section1
-
-    # # # A B
-    # # def template_AB(section1, section2):
-    # #     print(type(section1.tracks))
-    # #     print(section1.tracks)
-    # #     pass
-
-    # # A B
-    # def template_AB(section1tracks, section2tracks):
-        
-    #     pass
-
-    # # A B A
-    # def template_ABA(self):
-    #     pass
-
-    # # A B A B
-    # def template_ABAB(self):
-    #     pass
-
-    # # A B C
-    # def template_ABC(self):
-    #     pass
-
-
-
-
 
 if __name__ == "__main__":
 
-    random.seed(1)
-
-    # #All together with rhythmic chords & random key
-    # testmusic1 = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
-    # chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic1.key, numChords=4), duration=2, repetitions=2)
-    # testtrack = Track(instrument = 49)
-    # testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
-    # testmusic1.tracks.append(testtrack)
-    # arptrack = Track(instrument = 46)
-    # arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO)
-    # testmusic1.tracks.append(arptrack)
-    # basstrack = Track(instrument = 42)
-    # basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
-    # testmusic1.tracks.append(basstrack)
-    # rhythmtrack = Track(instrument = 117, notes = rhythmgen.generate_random_rhythm(8))
-    # rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 4)
-    # testmusic1.tracks.append(rhythmtrack)
-    # accomptrack = Track(instrument = 24)
-    # accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC)
-    # testmusic1.tracks.append(accomptrack)
-    # melodytrack = Track(instrument = 73)
-    # melodytrack.notes = melodygen.melody_from_chords(testmusic1, chords)
-    # testmusic1.tracks.append(melodytrack)
-
-    # # random.seed(2)
-
-    # #All together with rhythmic chords & random key
-    # testmusic2 = Music(tempo = 100, key = random.choice([A, As, B, C, Cs, D, Ds, E]))
-    # chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic2.key, numChords=4), duration=2, repetitions=2)
-    # testtrack = Track(instrument = 49)
-    # testtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
-    # testmusic2.tracks.append(testtrack)
-    # arptrack = Track(instrument = 46)
-    # arptrack.notes = accomp.accomp_from_chords(chords, style=accomp.ARPEGGIO)
-    # testmusic2.tracks.append(arptrack)
-    # basstrack = Track(instrument = 42)
-    # basstrack.notes = accomp.accomp_from_chords(chords, style=accomp.BASS)
-    # testmusic2.tracks.append(basstrack)
-    # rhythmtrack = Track(instrument = 117, notes = rhythmgen.generate_random_rhythm(8))
-    # rhythmtrack = rhythmtrack.repeat(testtrack.length() // 8 + 1, 4)
-    # testmusic2.tracks.append(rhythmtrack)
-    # accomptrack = Track(instrument = 24)
-    # accomptrack.notes = accomp.accomp_from_chords(chords, style=accomp.RHYTHMIC)
-    # testmusic2.tracks.append(accomptrack)
-    # melodytrack = Track(instrument = 73)
-    # melodytrack.notes = melodygen.melody_from_chords(testmusic2, chords)
-    # testmusic2.tracks.append(melodytrack)
-
-    # Working
-    # create_MIDI([testmusic1, testmusic2], "template_test.mid")
-
-
-
-
-
-    # # Working
-    # sectionA = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
-    # chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
-    # rhythm_instrument=117, accomp_instrument=24, melody_instrument=73)
-    
-    # sectionB = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
-    # chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
-    # rhythm_instrument=117, accomp_instrument=24, melody_instrument=73)
-    
-    # sections = [sectionA, sectionB]
-    # template = Template(templateType="AB", sections=sections)
-    # song = template.getSections()
-
-    # create_MIDI(song, outfile='AB.mid')
-
-
-
-
-
-
     sectionA = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
     chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
-    rhythm_instrument=117, accomp_instrument=24, melody_instrument=73)
+    rhythm_instrument=117, num_beats=4, accomp_instrument=24, melody_instrument=73)
     
     sectionB = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
     chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
-    rhythm_instrument=117, accomp_instrument=24, melody_instrument=73)
+    rhythm_instrument=117, num_beats=4, accomp_instrument=24, melody_instrument=73)
+
+    sectionC = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
+    chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
+    rhythm_instrument=117, num_beats=4, accomp_instrument=24, melody_instrument=73)
+
+    sectionD = Section(tempo=100, key=C, chords_instrument=49, num_chords=4,
+    chords_duration=2, chords_repetitions=2, arpeggio_instrument=46, bass_instrument=42,
+    rhythm_instrument=117, num_beats=4, accomp_instrument=24, melody_instrument=73)
     
+    sections = [sectionA]
+    template = Template(templateType="A", sections=sections)
+    song = template.getSections()
+    create_MIDI(song, outfile='A.mid')
+
+    sections = [sectionA, sectionB]
+    template = Template(templateType="AB", sections=sections)
+    song = template.getSections()
+    create_MIDI(song, outfile='AB.mid')
+
     sections = [sectionA, sectionB]
     template = Template(templateType="ABA", sections=sections)
     song = template.getSections()
-
     create_MIDI(song, outfile='ABA.mid')
+
+    sections = [sectionA, sectionB, sectionC]
+    template = Template(templateType="ABC", sections=sections)
+    song = template.getSections()
+    create_MIDI(song, outfile='ABC.mid')
+
+    sections = [sectionA, sectionB, sectionC, sectionD]
+    template = Template(templateType="ABCD", sections=sections)
+    song = template.getSections()
+    create_MIDI(song, outfile='ABCD.mid')
     
 
 
