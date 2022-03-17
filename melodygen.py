@@ -29,6 +29,7 @@ def melody_from_chords(music, chords, meter=SIMPLE, **config):
         ptime = 0
         PHRASE_LEN = 7
         while ptime < beats:
+            #print("eh")
             if duration > 0.5 and phrasetime > nrandom.normal(PHRASE_LEN, 1):
                 duration = random.choice([0.5, min(1, beats-ptime), min(1.5, beats-ptime)])
                 ptime += duration
@@ -40,7 +41,9 @@ def melody_from_chords(music, chords, meter=SIMPLE, **config):
             check_clash(chord, pitch) == 2 and random.randrange(2) == 0 or \
             prev_deg == scale_deg and random.randrange(3) <= 1:  #Reduce repetition
                 scale_deg = round(nrandom.normal(prev_deg, 2))
+                scale_deg = min(10, max(-10, scale_deg))
                 pitch = music.get_scale_note(scale_deg)
+                #print("ehhhh", pitch, scale_deg)
                 for n in chord:
                     if not music.is_in_scale(n.pitch) and abs(n.pitch - pitch) % 12 in [1, 11]:
                         pitch = n.pitch

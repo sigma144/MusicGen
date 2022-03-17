@@ -52,7 +52,8 @@ class Samples():
                 #seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
             chords.append(chord)
             prev_deg, prev_qual = deg, qual
-            print(deg, qual)
+            #print(deg, qual)
+        #print(chords)
         return chords
 
     def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):
