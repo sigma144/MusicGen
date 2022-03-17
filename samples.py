@@ -36,9 +36,7 @@ class Samples():
         testmusic.tracks.append(testtrack)
 
         return testmusic
-    def chord_prog_generator_scale(self, progKey = C, numChords = 4, randSeed = time.time()):
-
-        random.seed(randSeed)
+    def chord_prog_generator_scale(self, progKey = C, numChords = 4):
 
         testmusic = Music(key=progKey)
         chord = []
