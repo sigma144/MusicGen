@@ -60,11 +60,6 @@ class Genetic:
     # there are 5 representations of melody shapes
     # Flat, Rising, Falling, TopArc, and BottomArc
     def melodyShape(self, measures):
-        length = self.util.getNotesLength(measures)
-        for measure in measures:
-            length += len(measure)
-        m_max = NOTE_RANAGE / length
-
         # Divide the 8 measure into 4 sub measures
         sectionOne = measures[:2]
         sectionTwo = measures[2:4]
@@ -80,8 +75,16 @@ class Genetic:
         typeFour = self.util.getTypeViaMSE(modelFour)
         return [typeOne, typeTwo, typeThree, typeFour]
 
-    def melodyLinearity(self, measures):
-        pass
+    # not sure how many lap response the sum up together, means not sure what n value is in the paper
+    def melodyLinearity(self, measures, k=2, beta=1, alpha=1):
+        flattened = self.until.flatten_measures(measures)
+        # abondon the leftmost and right most note (this is kind of like the approach in image processing)
+        acc_lap = 0
+        for i in range(1, len(flattened) - 1):
+            lap_response = flattened[i-1] * beta + flattened[i] * k + flattened[i+1] * beta
+            acc_lap += lap_response
+        linearity = acc_lap ** 2 / (acc_lap**2 + 1)
+        return linearity
 
     def melodyKeyPrevalence(self, measures):
         pass
