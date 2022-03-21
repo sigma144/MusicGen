@@ -4,7 +4,7 @@ from midi import create_MIDI
 import rhythmgen
 import melodygen
 from accomp import accomp_from_chords
-from music import Music, A, As, B, C, Cs, D, Ds, E, Track
+from music import Music, Track
 from rhythmgen import SIMPLE, COMPOUND, generate_random_rhythm_track
 from samples import Samples
 from templates import Template
@@ -12,11 +12,10 @@ from templates import Template
 class MusicGen():
 
     def generate_music(self, filename):
-        templatestr = random.choice(['ABACA', 'ABABA', 'ABCA'])
+        templatestr = random.choice(['ABACA', 'ABABCB'])
         self.tempo = random.randint(80, 160)
-        self.key = random.choice([A, As, B, C, Cs, D, Ds, E])
-        #self.meter = random.choice([SIMPLE, COMPOUND])
-        self.meter = COMPOUND
+        self.key = random.randrange(12)
+        self.meter = random.choice([SIMPLE, COMPOUND])
         self.instruments = {'melody':random.randrange(115),
                        'melody2':random.randrange(115),
                        'chords':random.randrange(115),
@@ -29,6 +28,9 @@ class MusicGen():
                        'drumbacking':random.randrange(115)}
         sections = []
         for s in set(templatestr):
+            for k in self.instruments:
+                if random.randrange(3) == 0:
+                    self.instruments[k] = random.randrange(115)
             section = self.generate_section()
             sections.append(section)
         template = Template(templateType=templatestr, sections=sections)
@@ -37,25 +39,26 @@ class MusicGen():
 
     def generate_section(self):
         testmusic = Music(tempo = self.tempo, key = self.key)
-        chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=1)
+        chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2)
+        volume_scale = 60
 
-        chordtrack = Track(instrument = self.instruments["chords"])
+        chordtrack = Track(instrument = self.instruments["chords"], volume=volume_scale)
         chordtrack.notes = accomp_from_chords(chords, style=accomp.CHORDS)
         testmusic.tracks.append(chordtrack)
 
-        rhythmbasstrack = Track(instrument = self.instruments["bass"])
+        rhythmbasstrack = Track(instrument = self.instruments["bass"], volume=volume_scale)
         rhythmbasstrack.notes = accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS, meter=self.meter)
         testmusic.tracks.append(rhythmbasstrack)
 
-        basstrack = Track(instrument = self.instruments["bass"])
+        basstrack = Track(instrument = self.instruments["bass"], volume=volume_scale)
         basstrack.notes = accomp_from_chords(chords, style=accomp.BASS, meter=self.meter)
         testmusic.tracks.append(basstrack)
 
-        strumtrack = Track(instrument = self.instruments["strum"])
+        strumtrack = Track(instrument = self.instruments["strum"], volume=volume_scale)
         strumtrack.notes = accomp_from_chords(chords, style=accomp.RHYTHMIC, meter=self.meter)
         testmusic.tracks.append(strumtrack)
 
-        arpeggiotrack = Track(instrument = self.instruments["arpeggio"])
+        arpeggiotrack = Track(instrument = self.instruments["arpeggio"], volume=volume_scale)
         arpeggiotrack.notes = accomp_from_chords(chords, style=accomp.ARPEGGIO, meter=self.meter)
         testmusic.tracks.append(arpeggiotrack)
 
@@ -63,9 +66,9 @@ class MusicGen():
         melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
         testmusic.tracks.append(melodytrack)
 
-        melodytrack2 = Track(instrument = self.instruments["melody2"])
-        melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
-        testmusic.tracks.append(melodytrack2)
+        #melodytrack2 = Track(instrument = self.instruments["melody2"])
+        #melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
+        #testmusic.tracks.append(melodytrack2)
 
         #rhythmtrack = generate_random_rhythm_track(8, self.meter)
         #testmusic.tracks.append(rhythmtrack)

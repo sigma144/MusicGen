@@ -20,9 +20,9 @@ class Track:
     '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
     instrument(int): The instrument for this track (see instruments.txt for instrument numbers)
     notes(list[Note]): An optional list of Notes to initialize the track with'''
-    def __init__(self, instrument = 0, notes = None, drum_kit = False):
+    def __init__(self, instrument = 0, notes = None, drum_kit = False, volume = 100):
         if notes is None: notes = []
-        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit
+        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit; self.volume = volume
     '''Returns a new Track with the notes in this track repeated a number of times in a row.
     spacing(float): How many beats between repetitions
     repeats(int): How many repetitions to do'''

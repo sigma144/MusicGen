@@ -20,7 +20,7 @@ def create_MIDI(music, outfile='output.mid', outdir='midifiles'):
             channel = 9 if track.drum_kit else trackn
             mf.addProgramChange(trackn, channel, time, track.instrument)
             mf.addTempo(trackn, time, m.tempo)
-            volume = 100
+            volume = track.volume
             for n in track.notes:
                 mf.addNote(trackn, channel, n.pitch, n.time + time, n.duration, volume)
             trackn += 1
