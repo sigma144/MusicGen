@@ -56,6 +56,7 @@ class Music:
     def __init__(self, tempo = 100, key = C, mode_or_scale = MAJOR_MODE):
         self.tempo = tempo; self.key = key; self.tracks = []
         self.set_scale(mode_or_scale)
+        self.sections = [] # a section is a list containing multiple tracks
     '''Sets the scale of the song while shifting it to match the current musical key.
     mode_or_scale(int or list[int]): New mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
     def set_scale(self, mode_or_scale):

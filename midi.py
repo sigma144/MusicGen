@@ -28,3 +28,4 @@ def create_MIDI(music, outfile='output.mid', outdir='midifiles'):
         time += max([t.length() for t in m.tracks])
     with open(outdir+'/'+outfile, 'wb') as outf:
         mf.writeFile(outf)
+
