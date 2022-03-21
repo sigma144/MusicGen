@@ -40,17 +40,17 @@ class MusicGen():
     def generate_section(self):
         testmusic = Music(tempo = self.tempo, key = self.key)
         chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2)
-        volume_scale = 60
+        volume_scale = 70
 
         chordtrack = Track(instrument = self.instruments["chords"], volume=volume_scale)
         chordtrack.notes = accomp_from_chords(chords, style=accomp.CHORDS)
         testmusic.tracks.append(chordtrack)
 
-        rhythmbasstrack = Track(instrument = self.instruments["bass"], volume=volume_scale)
+        rhythmbasstrack = Track(instrument = self.instruments["bass"], volume=100)
         rhythmbasstrack.notes = accomp_from_chords(chords, style=accomp.RHYTHMIC_BASS, meter=self.meter)
         testmusic.tracks.append(rhythmbasstrack)
 
-        basstrack = Track(instrument = self.instruments["bass"], volume=volume_scale)
+        basstrack = Track(instrument = self.instruments["bass"], volume=100)
         basstrack.notes = accomp_from_chords(chords, style=accomp.BASS, meter=self.meter)
         testmusic.tracks.append(basstrack)
 
@@ -70,8 +70,10 @@ class MusicGen():
         #melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
         #testmusic.tracks.append(melodytrack2)
 
-        #rhythmtrack = generate_random_rhythm_track(8, self.meter)
-        #testmusic.tracks.append(rhythmtrack)
+        rhythmtrack = generate_random_rhythm_track(4, self.meter)
+        rhythmtrack = rhythmtrack.repeat(7, 4)
+        rhythmtrack.volume = volume_scale+10
+        testmusic.tracks.append(rhythmtrack)
 
         return testmusic
 
