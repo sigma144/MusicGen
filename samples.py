@@ -43,7 +43,7 @@ class Samples():
         chords = []
         choices = []
         for _ in range(numChords):
-            if random.randrange(4) == 0:
+            if random.randrange(4) == -1: #Disable for now
                 testmusic.set_scale(MINOR_MODE)
                 choices = [3, 6, 7]
             else:
@@ -52,7 +52,7 @@ class Samples():
             chord = [0, 1, 2, 3] #Purposely out-of-scale chord to trigger the loop
             while not testmusic.is_in_scale(chord):
                 chord = testmusic.get_scale_chord(random.choice(choices),
-                inversion=random.randrange(4),
+                inversion=random.choice([0, 0, 1, 2, 3]),
                 seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
             chords.append(chord)
         return chords

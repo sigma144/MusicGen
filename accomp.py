@@ -25,7 +25,7 @@ def accomp_from_chords(chords, style=CHORDS, meter=rhythmgen.SIMPLE, **config):
                 if b >= c[0].duration:
                     break
                 for n in c:
-                    notes.append(Note(n.pitch, b + time, 1/2))
+                    notes.append(Note(n.pitch, b + time, 1/3 if meter == rhythmgen.COMPOUND else 1/2))
             time += c[0].duration
     elif style == ARPEGGIO:
         floor, ceiling = config['range'] if 'range' in config else [60, 80]
@@ -38,9 +38,9 @@ def accomp_from_chords(chords, style=CHORDS, meter=rhythmgen.SIMPLE, **config):
             for i in range(c[0].duration * (3 if meter == rhythmgen.COMPOUND else 2)):
                 pattern.append(random.choice([n for n in in_range if len(pattern) == 0 or n != pattern[i-1]]))
             if meter == rhythmgen.COMPOUND:
-                notes += [Note(n, i/3 + time, 1) for i,n in enumerate(pattern)]
+                notes += [Note(n, i/3 + time, 1/3) for i,n in enumerate(pattern)]
             else:
-                notes += [Note(n, i/2 + time, 1) for i,n in enumerate(pattern)]
+                notes += [Note(n, i/2 + time, 1/2) for i,n in enumerate(pattern)]
             time += c[0].duration
     elif style == RHYTHMIC_BASS:
         floor, ceiling = config['range'] if 'range' in config else [40, 52]
@@ -51,7 +51,7 @@ def accomp_from_chords(chords, style=CHORDS, meter=rhythmgen.SIMPLE, **config):
             for b in rhythm:
                 if b >= c[0].duration:
                     break
-                notes.append(put_in_range(Note(c[0].pitch, b + time, 1/2), floor, ceiling))
+                notes.append(put_in_range(Note(c[0].pitch, b + time, 1/3 if meter == rhythmgen.COMPOUND else 1/2), floor, ceiling))
             time += c[0].duration
     else: raise Exception(f"Unknown style {style}")
     return notes
