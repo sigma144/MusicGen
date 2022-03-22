@@ -19,11 +19,10 @@ class geneticUtil:
     def getMeasureEncode(self, measure):
         times = [note[1] for note in measure]
         pitches = [note[0] for note in measure]
-        timeDiffs = [None] + [times[n]-times[n-1] for n in range(1,len(times))]
+        timeDiffs = [""] + [times[n]-times[n-1] for n in range(1,len(times))]
         result = []
         for timeDiff, pitch in zip(timeDiffs, pitches):
-            if timeDiff: 
-                result.append(str(timeDiff))
+            result.append(str(timeDiff))
             result.append(str(pitch))
         code = "".join(result)
         return code
@@ -46,7 +45,7 @@ class geneticUtil:
         model.fit(xVals, notes)
         return model
 
-    def getTypeViaMSE(self, model):
+    def getMSES(self, model):
         # fit 10 notes to calculate mean square error
         predXVals = np.array([x for x in range(10)]).reshape((-1, 1))
         predctsOne = model.predict(predXVals)
@@ -61,11 +60,8 @@ class geneticUtil:
         mseFall = np.mean((predctsOne - fallResult)**2)
         mseTop = np.mean((predctsOne - topResult)**2)
         mseBottom = np.mean((predctsOne - bottomResult)**2)
-
         mses = [mseFlat, mseRise, mseFall, mseTop, mseBottom]
-        results = ["falt", "rise", "fall", "top", "bottom"]
-        resultType = results[mses.index(min(mses))]
-        return resultType
+        return mses
             
 
 
