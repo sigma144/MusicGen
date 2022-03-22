@@ -16,16 +16,21 @@ class Genetic:
         self.util = geneticUtil()
         self.flattend = []
 
+    def initPopulation(self):
+
+        self.population = []
+
     def run(self):
         pass
 
     def mutation(self):
         pass
 
+    # TBD
     def crossover(self):
         pass
 
-    # get 8 meaasures of melody
+    # Get 8 meaasures of melody from music object
     def getMelody(self):
         pass
 
