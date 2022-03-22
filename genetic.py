@@ -1,6 +1,7 @@
 from geneticUtil import geneticUtil
 from music import Music
-
+from musicgen import MusicGen
+import random
 
 '''
 For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 measures
@@ -15,24 +16,60 @@ class Genetic:
         self.population = []
         self.util = geneticUtil()
         self.flattend = []
+        self.musicGen = MusicGen()
 
     def initPopulation(self):
+        # generate 50 population
+        for _ in range(50):
+            child = self.musicGen.generate_music("") # is there a way to just get Music object?
+            # pase the musci object
+            sections = self.getMelody(child)
+            self.population.append(sections)
 
-        self.population = []
+    def run(self, epoch=10):
+        self.initPopulation()
+        while epoch >= 0:
+            # mutate population
+            self.mutation()
+            # calculate fitness of the muatted population
+            self.melodyEvaluation()
+            epoch -= 1
+        
+        # decide the ones to survial
 
-    def run(self):
-        pass
-
+    # the mutation algorithm
     def mutation(self):
-        pass
-
+        for i, p in enumerate(self.population):
+            for j, measures in enumerate(p):
+                # randomly change a note in 8 measures?
+                mIndex = random.randint(0, 7)
+                measure = measures[mIndex]
+                noteIndex = random.randint(0, len(measure))
+                # mutate pitch and time
+                pitchVariance = random.randint(-10, 10)
+                timeVariance = float(random.randint(-10, 10) / 10)
+                self.population[i][j][mIndex][noteIndex][0] += pitchVariance
+                self.population[i][j][mIndex][noteIndex][1] += timeVariance
+                
     # TBD
     def crossover(self):
         pass
 
-    # Get 8 meaasures of melody from music object
-    def getMelody(self):
+    # Get section of measures from song
+    def getMelody(self, song):
         pass
+
+    # decide life and death of the children
+    def melodyEvaluation(self):
+        for p in self.population:
+            for measures in p:
+                self.setFlattend(measures)
+                simillarityScore = self.melodySelfSimilarity(measures)
+                shapeScores = self.melodyShape(measures) # how to deal with shape scores
+                linearityScore = self.melodyLinearity()
+                prevScore = self.melodyCMajorKeyPrevalence()
+                melodyRangeScoe = self.melodyRangeOfPitch()
+
 
     def setFlattend(self, measures):
         self.flattend = self.until.flatten_measures(measures)
@@ -55,6 +92,7 @@ class Genetic:
 
     # there are 5 representations of melody shapes
     # Flat, Rising, Falling, TopArc, and BottomArc
+    # return 4 subsection's scores for each type
     def melodyShape(self, measures):
         # Divide the 8 measure into 4 sub measures
         sections = [measures[:2], measures[2:4], measures[4:6], measures[6:]]
@@ -115,10 +153,6 @@ class Genetic:
             else:
                 continue
         return inRange/(len(self.flattened) * r)
-
-    # decide life and death of the children
-    def melodyEvaluation(self, measures):
-        pass
 
     # TBD
     def getChords(self):
