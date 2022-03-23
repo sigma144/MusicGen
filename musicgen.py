@@ -11,7 +11,7 @@ from templates import Template
 
 class MusicGen():
 
-    def generate_music(self, filename):
+    def generate_music(self):
         templatestr = random.choice(['ABACA', 'ABABCB'])
         self.tempo = random.randint(80, 160)
         self.key = random.randrange(12)
@@ -35,7 +35,7 @@ class MusicGen():
             sections.append(section)
         template = Template(templateType=templatestr, sections=sections)
         song = template.getSections()
-        create_MIDI(song, filename)
+        return song
 
     def generate_section(self):
         testmusic = Music(tempo = self.tempo, key = self.key)
@@ -79,4 +79,5 @@ class MusicGen():
 
 if __name__ == "__main__":
 
-    MusicGen().generate_music("musicgen.mid")
+    song = MusicGen().generate_music()
+    create_MIDI(song, "musicgen.mid")

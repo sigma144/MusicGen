@@ -1,5 +1,6 @@
 from midi import create_MIDI
 import music, rhythmgen, accomp
+from musicgen import MusicGen
 from music import A, As, Bb, B, C, Bs, Cs, Db, D, Ds, Eb, E, Fb, F, Es, Fs, Gb, G, Gs, Ab, OCTAVE
 from music import MAJOR, MINOR, SUSPENDED, DIMINISHED, AUGMENTED, DOMINANT
 from music import Music, Track, Note
@@ -322,3 +323,28 @@ testmusic3 = Music(tempo = 180)
 testtrack = generate_random_rhythm_track(16)
 testmusic3.tracks.append(testtrack)
 create_MIDI([testmusic1, testmusic2, testmusic3, testmusic1], 'concat.mid')
+
+#Split/join test
+testmusic = Music(tempo = 100)
+chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=1)
+chordtrack = Track(instrument = 49)
+chordtrack.notes = accomp.accomp_from_chords(chords, style=accomp.CHORDS)
+testmusic.tracks.append(chordtrack)
+rhythmtrack = generate_random_rhythm_track(4)
+rhythmtrack = rhythmtrack.repeat(8, 4)
+testmusic.tracks.append(rhythmtrack)
+melodytrack = Track(instrument = 73)
+melodytrack.notes = melodygen.melody_from_chords(testmusic, chords)
+measures = melodytrack.split()
+testmusic.tracks.append(melodytrack)
+create_MIDI(testmusic, "testsplit.mid")
+newmusic = Music(tempo = 100)
+newtrack = melodytrack.join(measures)
+newmusic.tracks.append(newtrack)
+newmusic.tracks.append(chordtrack)
+newmusic.tracks.append(rhythmtrack)
+create_MIDI(testmusic, "testjoin.mid")
+
+#MusicGen test
+song = MusicGen().generate_music()
+create_MIDI(song, "musicgen.mid")

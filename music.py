@@ -20,9 +20,9 @@ class Track:
     '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
     instrument(int): The instrument for this track (see instruments.txt for instrument numbers)
     notes(list[Note]): An optional list of Notes to initialize the track with'''
-    def __init__(self, instrument = 0, notes = None, drum_kit = False, volume = 100):
+    def __init__(self, instrument = 0, notes = None, drum_kit = False, volume = 100, section_length = 32):
         if notes is None: notes = []
-        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit; self.volume = volume
+        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit; self.volume = volume; self.section_length = section_length
     '''Returns a new Track with the notes in this track repeated a number of times in a row.
     spacing(float): How many beats between repetitions
     repeats(int): How many repetitions to do'''
@@ -37,26 +37,38 @@ class Track:
         for n in self.notes:
             latest = max(latest, n.time + n.duration)
         return latest
-    '''Place a series of notes at the end of the track.
-    notes(Note|list[Note]): Notes to place. Note pitches and durations will be copied.
-    Note times will be offset by the number of beats currently in the track.'''
-    def append_notes(self, notes):
-        if notes is Note:
-            self.append_notes([notes])
-            return
-        last_beat = self.length
-        for n in notes:
-            self.notes.append(Note(n.pitch, last_beat + n.time, n.duration))
+    '''Divide the track into a set number of measures.'''
+    def split(self, parts=None):
+        if parts is None: parts = self.section_length // 4
+        measures = []
+        measure_len = self.section_length / parts
+        for i in range(parts):
+            measures.append([])
+            for n in self.notes:
+                if n.time >= measure_len*i and n.time < measure_len*(i+1):
+                    newnote = Note(n.pitch, n.time - measure_len*i, n.duration)
+                    measures[i].append(newnote)
+        return measures
+    def join(self, measures):
+        track = Track(instrument=self.instrument, notes=None,
+            drum_kit=self.drum_kit, volume=self.volume, section_length=self.section_length)
+        measure_len = self.section_length / len(measures)
+        for i in range(len(measures)):
+            for n in measures[i]:
+                newnote = Note(n.pitch, n.time+measure_len*i, n.duration)
+                track.notes.append(newnote)
+        return track
+
 
 class Music:
     '''Create a new piece of music to be turned into MIDI.
     tempo(int) = 100: BPM of the song
     key(int) = C: Key of the song, used to generate scale. Pass in a note letter such as A or Bb
     mode_or_scale(int or list[int]) = MAJOR_MODE: Mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
-    def __init__(self, tempo = 100, key = C, mode_or_scale = MAJOR_MODE):
+    def __init__(self, tempo = 100, key = C, mode_or_scale = MAJOR_MODE, section_length=8):
         self.tempo = tempo; self.key = key; self.tracks = []
         self.set_scale(mode_or_scale)
-        self.sections = [] # a section is a list containing multiple tracks
+        self.section_length = section_length
     '''Sets the scale of the song while shifting it to match the current musical key.
     mode_or_scale(int or list[int]): New mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
     def set_scale(self, mode_or_scale):
