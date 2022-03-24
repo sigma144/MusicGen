@@ -1,7 +1,11 @@
 from geneticUtil import geneticUtil
-from music import Music
+from music import Music, Track
 from musicgen import MusicGen
+import melodygen
 import random
+from rhythmgen import SIMPLE
+
+from samples import Samples
 
 '''
 For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 measures
@@ -15,16 +19,20 @@ class Genetic:
     def __init__(self) -> None:
         self.population = []
         self.util = geneticUtil()
-        self.flattend = []
+        self.flattened = []
         self.musicGen = MusicGen()
+        self.testmusic = Music(tempo = 100)
+        self.meter = SIMPLE
+        self.chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=self.testmusic.key, numChords=8), duration=4, repetitions=1)
 
     def initPopulation(self):
         # generate 50 population
         for _ in range(50):
-            child = self.musicGen.generate_music("") # is there a way to just get Music object?
+            melodytrack = Track()
+            melodytrack.notes = melodygen.melody_from_chords(self.testmusic, self.chords, meter=self.meter)
             # pase the musci object
-            sections = self.getMelody(child)
-            self.population.append(sections)
+            sections = melodytrack.split()
+            self.population.append([sections])
 
     def run(self, epoch=10):
         self.initPopulation()
@@ -44,12 +52,12 @@ class Genetic:
                 # randomly change a note in 8 measures?
                 mIndex = random.randint(0, 7)
                 measure = measures[mIndex]
-                noteIndex = random.randint(0, len(measure))
+                noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
                 pitchVariance = random.randint(-10, 10)
                 timeVariance = float(random.randint(-10, 10) / 10)
-                self.population[i][j][mIndex][noteIndex][0] += pitchVariance
-                self.population[i][j][mIndex][noteIndex][1] += timeVariance
+                self.population[i][j][mIndex][noteIndex].pitch += pitchVariance
+                self.population[i][j][mIndex][noteIndex].time += timeVariance
                 
     # TBD
     def crossover(self):
@@ -65,14 +73,20 @@ class Genetic:
             for measures in p:
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
+                print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
+                print(shapeScores)
                 linearityScore = self.melodyLinearity()
+                print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                melodyRangeScoe = self.melodyRangeOfPitch()
+                print(prevScore)
+                melodyRangeScore = self.melodyRangeOfPitch()
+                print(melodyRangeScore)
+                exit()
 
 
     def setFlattend(self, measures):
-        self.flattend = self.until.flatten_measures(measures)
+        self.flattened = self.util.flatten_measures(measures)
     # measures how often repating measures occur in this piece
     # if the same measure occurs often in this piece means this piece is more self similar 
     # return between 0 and 1
@@ -94,15 +108,19 @@ class Genetic:
     # Flat, Rising, Falling, TopArc, and BottomArc
     # return 4 subsection's scores for each type
     def melodyShape(self, measures):
+        measures = [[n.pitch for n in m] for m in measures]
         # Divide the 8 measure into 4 sub measures
-        sections = [measures[:2], measures[2:4], measures[4:6], measures[6:]]
+        twomeasures = [measures[:2], measures[2:4], measures[4:6], measures[6:]]
+        #print(twomeasures)
         result = []
-        for section in sections:
-            flatSection = self.util.flatten_measures(section)
+        for twomeasure in twomeasures:
+            flatSection = self.util.flatten_measures(twomeasure)
             sectionLength = len(flatSection)
-            model = self.util.calcRegression(section)
+            model = self.util.calcRegression(twomeasure)
+            minval = min(sum(twomeasure, start=[]))
+            maxval = max(sum(twomeasure, start=[]))
             # get mses of different type of shapes
-            mses = self.util.getMSES(model)
+            mses = self.util.getMSES(model, minval, maxval)
             sectionResult = []
             for mse in mses:
                 mMax = NOTE_RANAGE / sectionLength
@@ -120,7 +138,7 @@ class Genetic:
         # abondon the leftmost and right most note (this is kind of like the approach in image processing)
         acc_lap = 0
         for i in range(1, len(self.flattened) - 1):
-            lap_response = self.flattened[i-1] * beta + self.flattened[i] * k + self.flattened[i+1] * beta
+            lap_response = self.flattened[i-1].pitch * beta + self.flattened[i].pitch * k + self.flattened[i+1].pitch * beta
             acc_lap += lap_response
         linearity = (alpha * (acc_lap ** 2)) / (alpha * (acc_lap**2) + 1)
         return linearity
@@ -133,7 +151,7 @@ class Genetic:
         inMajor = 0
         for note in self.flattened:
             # Pass in pitch
-            if checkerMusic.is_in_scale(note[0]):
+            if checkerMusic.is_in_scale(note.pitch):
                 inMajor += 1
         return inMajor/len(self.flattened)
 
@@ -142,13 +160,13 @@ class Genetic:
         inRange = 0
         for note in self.flattened:
             # Pass in pitch
-            if FOUR_OCTAVE_RANGE[0][1] < note[0] < FOUR_OCTAVE_RANGE[0][1]:
+            if FOUR_OCTAVE_RANGE[0][1] < note.pitch < FOUR_OCTAVE_RANGE[0][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[1][1] < note[0] < FOUR_OCTAVE_RANGE[1][1]:
+            elif FOUR_OCTAVE_RANGE[1][1] < note.pitch < FOUR_OCTAVE_RANGE[1][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[2][1] < note[0] < FOUR_OCTAVE_RANGE[2][1]:
+            elif FOUR_OCTAVE_RANGE[2][1] < note.pitch < FOUR_OCTAVE_RANGE[2][1]:
                 inRange += 1
-            elif FOUR_OCTAVE_RANGE[3][1] < note[0] < FOUR_OCTAVE_RANGE[3][1]:
+            elif FOUR_OCTAVE_RANGE[3][1] < note.pitch < FOUR_OCTAVE_RANGE[3][1]:
                 inRange += 1
             else:
                 continue
@@ -170,3 +188,6 @@ class Genetic:
     # TBD
     def chordsEvaluation(self):
         pass
+
+if __name__ == "__main__":
+    Genetic().run(1)

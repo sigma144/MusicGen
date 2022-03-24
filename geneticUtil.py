@@ -1,11 +1,11 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-FLAT_MELODY = [[24, 26, 24, 24, 24, 23, 21, 19], [21, 19, 18, 19, 20, 23, 24, 23], [24]]
-RISING_MELODY = [[-6, -5, -3, -1, 0, 4, 7, 9], [12, 11, 12, 16, 19, 18, 19, 23], [24]]
-FALLING_MELODY = [[33, 28, 26, 24, 21, 19, 16, 18], [16, 14, 11, 9, 7, 4, 6, 2], [-1]]
-TOP_ARC_MELODY = [[7, 9, 9, 12, 14, 16, 19, 21], [19, 18, 19, 12, 11, 9, 6, 4], [2]]
-BOTTOM_ARC_MELODY = [[23, 18, 11, 4, 2, -1, 0, 2], [4, 7, 6, 4, 7, 12, 14, 16], [18]]
+FLAT_MELODY = [[24, 26, 24, 24, 24, 23, 21, 19], [21, 19, 18, 19, 20, 23, 24, 23], [24]]; FLAT_RANGE = [18, 26]
+RISING_MELODY = [[-6, -5, -3, -1, 0, 4, 7, 9], [12, 11, 12, 16, 19, 18, 19, 23], [24]]; RISING_RANGE = [-6, 23]
+FALLING_MELODY = [[33, 28, 26, 24, 21, 19, 16, 18], [16, 14, 11, 9, 7, 4, 6, 2], [-1]]; FALLING_RANGE = [2, 33]
+TOP_ARC_MELODY = [[7, 9, 9, 12, 14, 16, 19, 21], [19, 18, 19, 12, 11, 9, 6, 4], [2]]; TOP_ARC_RANGE = [2, 21]
+BOTTOM_ARC_MELODY = [[23, 18, 11, 4, 2, -1, 0, 2], [4, 7, 6, 4, 7, 12, 14, 16], [18]]; BOTTOM_ARC_RANGE = [-1, 23]
 
 class geneticUtil:
 
@@ -17,8 +17,8 @@ class geneticUtil:
         self.bottomArcRegression = self.calcRegression(BOTTOM_ARC_MELODY)
 
     def getMeasureEncode(self, measure):
-        times = [note[1] for note in measure]
-        pitches = [note[0] for note in measure]
+        times = [note.time for note in measure]
+        pitches = [note.pitch for note in measure]
         timeDiffs = [""] + [times[n]-times[n-1] for n in range(1,len(times))]
         result = []
         for timeDiff, pitch in zip(timeDiffs, pitches):
@@ -34,26 +34,38 @@ class geneticUtil:
         return length
 
     def flatten_measures(self, measures):
-        measures = np.array(measures)
-        flatted = measures.flatten()
+        flatted = sum(measures, start=[])
         return flatted
 
     def calcRegression(self, measures):
-        notes = self.flatten_measures(measures)
+        notes = np.array(self.flatten_measures(measures))
+        notes = notes.reshape((-1, 1))
         xVals = np.array([x for x in range(len(notes))]).reshape((-1, 1))
         model = LinearRegression()
+        #print("measures\n",measures)
+        #print("xVals\n",xVals)
+        #print("Notes\n",notes)
         model.fit(xVals, notes)
         return model
 
-    def getMSES(self, model):
+    def getMSES(self, model, minVal, maxVal):
         # fit 10 notes to calculate mean square error
-        predXVals = np.array([x for x in range(10)]).reshape((-1, 1))
+        #predXVals = np.array([x for x in range(10)]).reshape((-1, 1))
+        #predctsOne = model.predict(predXVals)
+        def getValsInRange(numVals, minVal, maxVal):
+            return np.array([x for x in np.arange(minVal, maxVal+0.00001, (maxVal-minVal)/(numVals-1))]).reshape((-1, 1))
+        predXVals = getValsInRange(10, minVal, maxVal)
         predctsOne = model.predict(predXVals)
-        flatResult = self.flatRegression.predict(predXVals)
-        riseResult = self.riseRegression.predict(predXVals)
-        fallResult = self.fallRegression.predict(predXVals)
-        topResult = self.topArcRegression.predict(predXVals)
-        bottomResult = self.bottomArcRegression.predict(predXVals)
+        predXValsForFlat = getValsInRange(10, FLAT_RANGE[0], FLAT_RANGE[1])
+        predXValsForRise = getValsInRange(10, RISING_RANGE[0], RISING_RANGE[1])
+        predXValsForFall = getValsInRange(10, FALLING_RANGE[0], FALLING_RANGE[1])
+        predXValsForTop = getValsInRange(10, TOP_ARC_RANGE[0], TOP_ARC_RANGE[1])
+        predXValsForBottom = getValsInRange(10, BOTTOM_ARC_RANGE[0], BOTTOM_ARC_RANGE[1])
+        flatResult = self.flatRegression.predict(predXValsForFlat)
+        riseResult = self.riseRegression.predict(predXValsForRise)
+        fallResult = self.fallRegression.predict(predXValsForFall)
+        topResult = self.topArcRegression.predict(predXValsForTop)
+        bottomResult = self.bottomArcRegression.predict(predXValsForBottom)
 
         mseFlat = np.mean((predctsOne - flatResult)**2)
         mseRise = np.mean((predctsOne - riseResult)**2)
