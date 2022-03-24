@@ -69,6 +69,7 @@ class Music:
         self.tempo = tempo; self.key = key; self.tracks = []
         self.set_scale(mode_or_scale)
         self.section_length = section_length
+        self.melody = None
     '''Sets the scale of the song while shifting it to match the current musical key.
     mode_or_scale(int or list[int]): New mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
     def set_scale(self, mode_or_scale):
@@ -130,5 +131,8 @@ class Music:
             if n % 12 not in scale:
                 return False
         return True
+
+    def get_melody(self):
+        return self.melody
 
 

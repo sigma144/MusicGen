@@ -65,6 +65,7 @@ class MusicGen():
         melodytrack = Track(instrument = self.instruments["melody"])
         melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
         testmusic.tracks.append(melodytrack)
+        testmusic.melody = melodytrack
 
         #melodytrack2 = Track(instrument = self.instruments["melody2"])
         #melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
