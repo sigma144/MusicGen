@@ -75,7 +75,7 @@ class MusicGen():
         #testmusic.tracks.append(melodytrack2)
 
         rhythmtrack = generate_random_rhythm_track(4, self.meter)
-        rhythmtrack = rhythmtrack.repeat(7, 4)
+        rhythmtrack = rhythmtrack.repeat(8, 4)
         rhythmtrack.volume = volume_scale+10
         testmusic.tracks.append(rhythmtrack)
 

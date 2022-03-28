@@ -32,7 +32,10 @@ def generate_random_rhythm(beats, meter=SIMPLE, instrument=60, scales=None, dens
 def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=3):
     track = Track(0, [], True)
     for _ in range(num_instr):
-        notes = generate_random_rhythm(beats, meter, random.randint(35, 87))
+        instr = random.randint(35, 87)
+        if random.randrange(5) == 0:
+            instr = random.randint(35, 41)
+        notes = generate_random_rhythm(beats, meter, instr)
         track.notes += notes
     return track
 

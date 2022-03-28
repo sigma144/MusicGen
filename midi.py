@@ -25,7 +25,7 @@ def create_MIDI(music, outfile='output.mid', outdir='midifiles'):
                 mf.addNote(trackn, channel, n.pitch, n.time + time, n.duration, volume)
             trackn += 1
             if trackn == 9: trackn += 1
-        time += max([t.length() for t in m.tracks])
+        time += max([t.section_length for t in m.tracks])
     with open(outdir+'/'+outfile, 'wb') as outf:
         mf.writeFile(outf)
 
