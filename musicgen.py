@@ -39,7 +39,10 @@ class MusicGen():
 
     def generate_section(self):
         testmusic = Music(tempo = self.tempo, key = self.key)
-        chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2)
+        chords = random.choice([
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=4), duration=4, repetitions=2)
+        ])
         volume_scale = 70
 
         chordtrack = Track(instrument = self.instruments["chords"], volume=volume_scale)
@@ -62,7 +65,7 @@ class MusicGen():
         arpeggiotrack.notes = accomp_from_chords(chords, style=accomp.ARPEGGIO, meter=self.meter)
         testmusic.tracks.append(arpeggiotrack)
 
-        melodytrack = Track(instrument = self.instruments["melody"])
+        melodytrack = Track(instrument = self.instruments["melody"], volume=100)
         melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
         testmusic.tracks.append(melodytrack)
         testmusic.melody = melodytrack
