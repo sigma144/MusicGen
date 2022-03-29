@@ -29,7 +29,12 @@ def generate_random_rhythm(beats, meter=SIMPLE, instrument=60, scales=None, dens
                 notes.append(Note(instrument, time, 1))
     return notes
 
-def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=3):
+def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=4):
+    def lr(first, last): return list(range(first, last+1))
+    bass_drums = [35,36]
+    snare_drums = [38,39,40]
+    misc_drums = [37,41,42,43]+lr(44,48)+[50,53,54,56,58]+lr(60,70)+lr(75,81)
+    cymbals = [49,51,52,55,57,59]
     track = Track(0, [], True)
     for _ in range(num_instr):
         instr = random.randint(35, 87)
