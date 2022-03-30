@@ -4,11 +4,11 @@ from musicgen import MusicGen
 import random
 
 '''
-For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 measures
+For the genetic algorithm we will evaaluate the songs by 8 measures
 '''
 
 NOTE_RANAGE = 49
-FOUR_OCTAVE_RANGE = [[12, 24], [24, 36], [36, 48], [48, 60]]
+FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
 
 class Genetic:
 
@@ -46,8 +46,8 @@ class Genetic:
                 measure = measures[mIndex]
                 noteIndex = random.randint(0, len(measure))
                 # mutate pitch and time
-                pitchVariance = random.randint(-10, 10)
-                timeVariance = float(random.randint(-10, 10) / 10)
+                pitchVariance = random.randint(-5, 5)
+                timeVariance = float(random.choice([-1, 1, 0.5, -0.5, 0.25, -0.25, 0.125, -0.125]))
                 self.population[i][j][mIndex][noteIndex][0] += pitchVariance
                 self.population[i][j][mIndex][noteIndex][1] += timeVariance
                 
@@ -152,7 +152,7 @@ class Genetic:
                 inRange += 1
             else:
                 continue
-        return inRange/(len(self.flattened) * r)
+        return inRange / (len(self.flattened) * r)
 
     # TBD
     def getChords(self):
