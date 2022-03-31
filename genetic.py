@@ -13,7 +13,7 @@ For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 me
 '''
 
 NOTE_RANAGE = 49
-FOUR_OCTAVE_RANGE = [[12, 24], [24, 36], [36, 48], [48, 60]]
+FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
 
 class Genetic:
 
@@ -84,11 +84,11 @@ class Genetic:
                 # print("linearityScore")
                 # print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                print("prevScore")
-                print(prevScore)
+                # print("prevScore")
+                # print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
-                # print("melodyRangeScore")
-                # print(melodyRangeScore)
+                print("melodyRangeScore")
+                print(melodyRangeScore)
                 break
             break
 
@@ -170,18 +170,18 @@ class Genetic:
                 inMajor += 1
         return inMajor/len(self.flattened)
 
-    # return a score between 0 and 1
+    # return a score between 0 and 1, typically around 0.3 to 0.45
     def melodyRangeOfPitch(self, r=2):
         inRange = 0
         for note in self.flattened:
             # Pass in pitch
-            if FOUR_OCTAVE_RANGE[0][1] < note.pitch < FOUR_OCTAVE_RANGE[0][1]:
+            if FOUR_OCTAVE_RANGE[0][0] < note.pitch < FOUR_OCTAVE_RANGE[0][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[1][1] < note.pitch < FOUR_OCTAVE_RANGE[1][1]:
+            elif FOUR_OCTAVE_RANGE[1][0] < note.pitch < FOUR_OCTAVE_RANGE[1][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[2][1] < note.pitch < FOUR_OCTAVE_RANGE[2][1]:
+            elif FOUR_OCTAVE_RANGE[2][0] < note.pitch < FOUR_OCTAVE_RANGE[2][1]:
                 inRange += 1
-            elif FOUR_OCTAVE_RANGE[3][1] < note.pitch < FOUR_OCTAVE_RANGE[3][1]:
+            elif FOUR_OCTAVE_RANGE[3][0] < note.pitch < FOUR_OCTAVE_RANGE[3][1]:
                 inRange += 1
             else:
                 continue
