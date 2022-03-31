@@ -74,27 +74,27 @@ class Genetic:
             for measures in p: # go through measures (sections) of a child
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
-                print("simillarityScore")
-                print(simillarityScore)
+                # print("simillarityScore")
+                # print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
-                print("shapeScores")
-                print(shapeScores)
+                # print("shapeScores")
+                # print(shapeScores)
                 linearityScore = self.melodyLinearity()
                 print("linearityScore")
                 print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                print("prevScore")
-                print(prevScore)
+                # print("prevScore")
+                # print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
-                print("melodyRangeScore")
-                print(melodyRangeScore)
+                # print("melodyRangeScore")
+                # print(melodyRangeScore)
             break
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
     # measures how often repating measures occur in this piece
     # if the same two notes patten occurs in this piece means this piece is more self similar 
-    # return between 0 and 1
+    # return between 0 and 1, around 0.2 to 0.3, caan be as high as 0.4 to 0.5
     def melodySelfSimilarity(self, measures):
         measureDict = {}
         gaps = 0
@@ -145,14 +145,15 @@ class Genetic:
         return result
 
     # not sure how many lap response the sum up together, means not sure what n value is in the paper
-    # return between 0 and 1
-    def melodyLinearity(self, k=2, beta=1, alpha=1):
+    # return between 0 and 1, normally betweenn 0.3 to 0.4 can go betwwen 0.2 and 0.5
+    def melodyLinearity(self, k=2, beta=1, alpha=0.00000001):
         # abondon the leftmost and right most note (this is kind of like the approach in image processing)
         acc_lap = 0
         for i in range(1, len(self.flattened) - 1):
             lap_response = self.flattened[i-1].pitch * beta + self.flattened[i].pitch * k + self.flattened[i+1].pitch * beta
             acc_lap += lap_response
-        linearity = (alpha * (acc_lap ** 2)) / (alpha * (acc_lap**2) + 1)
+        print("acc_lap", acc_lap)
+        linearity = (alpha * (acc_lap**2)) / (alpha * (acc_lap**2) + 1)
         return linearity
 
     # Since we only have C major, thus, this function will only measure the propotion
