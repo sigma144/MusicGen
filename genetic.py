@@ -4,6 +4,7 @@ from musicgen import MusicGen
 import melodygen
 import random
 from rhythmgen import SIMPLE
+import numpy as np
 
 from samples import Samples
 
@@ -37,7 +38,7 @@ class Genetic:
 
     def run(self, epoch=10):
         self.initPopulation()
-        while epoch >= 0:
+        while epoch > 0:
             # mutate population
             self.mutation()
             # calculate fitness of the muatted population
@@ -80,14 +81,15 @@ class Genetic:
                 # print("shapeScores")
                 # print(shapeScores)
                 linearityScore = self.melodyLinearity()
-                print("linearityScore")
-                print(linearityScore)
+                # print("linearityScore")
+                # print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                # print("prevScore")
-                # print(prevScore)
+                print("prevScore")
+                print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
                 # print("melodyRangeScore")
                 # print(melodyRangeScore)
+                break
             break
 
     def setFlattend(self, measures):
@@ -152,7 +154,7 @@ class Genetic:
         for i in range(1, len(self.flattened) - 1):
             lap_response = self.flattened[i-1].pitch * beta + self.flattened[i].pitch * k + self.flattened[i+1].pitch * beta
             acc_lap += lap_response
-        print("acc_lap", acc_lap)
+        # print("acc_lap", acc_lap)
         linearity = (alpha * (acc_lap**2)) / (alpha * (acc_lap**2) + 1)
         return linearity
 
