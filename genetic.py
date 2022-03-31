@@ -4,6 +4,7 @@ from musicgen import MusicGen
 import melodygen
 import random
 from rhythmgen import SIMPLE
+import numpy as np
 
 from samples import Samples
 
@@ -12,7 +13,7 @@ For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 me
 '''
 
 NOTE_RANAGE = 49
-FOUR_OCTAVE_RANGE = [[12, 24], [24, 36], [36, 48], [48, 60]]
+FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
 
 class Genetic:
 
@@ -30,13 +31,14 @@ class Genetic:
         for _ in range(50):
             melodytrack = Track()
             melodytrack.notes = melodygen.melody_from_chords(self.testmusic, self.chords, meter=self.meter)
-            # pase the musci object
-            sections = melodytrack.split()
-            self.population.append([sections])
+            # pase the music object
+            section = melodytrack.split()
+            child = [section] # a chilld has mutiple sections
+            self.population.append(child)
 
     def run(self, epoch=10):
         self.initPopulation()
-        while epoch >= 0:
+        while epoch > 0:
             # mutate population
             self.mutation()
             # calculate fitness of the muatted population
@@ -54,9 +56,11 @@ class Genetic:
                 measure = measures[mIndex]
                 noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
-                pitchVariance = random.randint(-10, 10)
+                pitchVariance = random.randint(-5, 5)
                 timeVariance = float(random.randint(-10, 10) / 10)
+                # print("before: ", self.population[i][j][mIndex][noteIndex].pitch)
                 self.population[i][j][mIndex][noteIndex].pitch += pitchVariance
+                # print(self.population[i][j][mIndex][noteIndex].pitch)
                 self.population[i][j][mIndex][noteIndex].time += timeVariance
                 
     # TBD
@@ -69,39 +73,52 @@ class Genetic:
 
     # decide life and death of the children
     def melodyEvaluation(self):
-        for p in self.population:
-            for measures in p:
+        for p in self.population: # go through every children
+            for measures in p: # go through measures (sections) of a child
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
+                print("simillarityScore")
                 print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
-                print(shapeScores)
+                print("shapeScores")
+                print(shapeScores[0])
+                print(shapeScores[1])
+                print(shapeScores[2])
+                print(shapeScores[3])
                 linearityScore = self.melodyLinearity()
+                print("linearityScore")
                 print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
+                print("prevScore")
                 print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
+                print("melodyRangeScore")
                 print(melodyRangeScore)
-                exit()
-
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
     # measures how often repating measures occur in this piece
-    # if the same measure occurs often in this piece means this piece is more self similar 
-    # return between 0 and 1
+    # if the same two notes patten occurs in this piece means this piece is more self similar 
+    # return between 0 and 1, around 0.2 to 0.3, caan be as high as 0.4 to 0.5
     def melodySelfSimilarity(self, measures):
         measureDict = {}
-        totalNotes = 0
-        for measure in measures:
-            totalNotes += len(measure)
-            measureEncode = self.util.getMeasureEncode(measure)
-            if measureEncode in measureDict:
-                measureDict[measureEncode] += 1
+        gaps = 0
+        flatted = self.util.flatten_measures(measures)
+        for i in range(len(flatted)-1): # go through two notes a time
+            twoNotes = [flatted[i], flatted[i+1]]
+            gaps += 1
+            twoNotesEncode = self.util.getMeasureEncode(twoNotes)
+            if twoNotesEncode in measureDict:
+                measureDict[twoNotesEncode] += 1
             else:
-                measureDict[measureEncode] = 1
+                measureDict[twoNotesEncode] = 1
+        
+        repetition = 0
+        for i, value in measureDict.items():
+            if value > 1:
+                repetition += value
 
-        score = max(measureDict.values()) / len(measures) 
+        score = repetition / gaps
         return score
 
     # there are 5 representations of melody shapes
@@ -115,32 +132,27 @@ class Genetic:
         result = []
         for twomeasure in twomeasures:
             flatSection = self.util.flatten_measures(twomeasure)
-            sectionLength = len(flatSection)
-            model = self.util.calcRegression(twomeasure)
-            minval = min(sum(twomeasure, start=[]))
-            maxval = max(sum(twomeasure, start=[]))
+            # print("two measure: ", flatSection)
+            # sectionLength = len(flatSection)
+            model = self.util.calcRegression(flatSection)
             # get mses of different type of shapes
-            mses = self.util.getMSES(model, minval, maxval)
+            mses = self.util.getMSES(model)
             sectionResult = []
             for mse in mses:
-                mMax = NOTE_RANAGE / sectionLength
-                m = flatSection[-1] - flatSection[0] # m could be negative
-                factorOne = 1 - (mMax - m) / 2 * mMax
-                factorTwo = 1 - mse**2 / (mse**2 + 10000)
-                score = factorOne * factorTwo # not making too much of sense
-                sectionResult.append(score)
+                sectionResult.append(mse)
             result.append(sectionResult)
         return result
 
     # not sure how many lap response the sum up together, means not sure what n value is in the paper
-    # return between 0 and 1
-    def melodyLinearity(self, k=2, beta=1, alpha=1):
+    # return between 0 and 1, normally betweenn 0.3 to 0.4 can go betwwen 0.2 and 0.5
+    def melodyLinearity(self, k=2, beta=1, alpha=0.00000001):
         # abondon the leftmost and right most note (this is kind of like the approach in image processing)
         acc_lap = 0
         for i in range(1, len(self.flattened) - 1):
             lap_response = self.flattened[i-1].pitch * beta + self.flattened[i].pitch * k + self.flattened[i+1].pitch * beta
             acc_lap += lap_response
-        linearity = (alpha * (acc_lap ** 2)) / (alpha * (acc_lap**2) + 1)
+        # print("acc_lap", acc_lap)
+        linearity = (alpha * (acc_lap**2)) / (alpha * (acc_lap**2) + 1)
         return linearity
 
     # Since we only have C major, thus, this function will only measure the propotion
@@ -155,18 +167,18 @@ class Genetic:
                 inMajor += 1
         return inMajor/len(self.flattened)
 
-    # return a score between 0 and 1
+    # return a score between 0 and 1, typically around 0.3 to 0.45
     def melodyRangeOfPitch(self, r=2):
         inRange = 0
         for note in self.flattened:
             # Pass in pitch
-            if FOUR_OCTAVE_RANGE[0][1] < note.pitch < FOUR_OCTAVE_RANGE[0][1]:
+            if FOUR_OCTAVE_RANGE[0][0] < note.pitch < FOUR_OCTAVE_RANGE[0][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[1][1] < note.pitch < FOUR_OCTAVE_RANGE[1][1]:
+            elif FOUR_OCTAVE_RANGE[1][0] < note.pitch < FOUR_OCTAVE_RANGE[1][1]:
                 inRange += r
-            elif FOUR_OCTAVE_RANGE[2][1] < note.pitch < FOUR_OCTAVE_RANGE[2][1]:
+            elif FOUR_OCTAVE_RANGE[2][0] < note.pitch < FOUR_OCTAVE_RANGE[2][1]:
                 inRange += 1
-            elif FOUR_OCTAVE_RANGE[3][1] < note.pitch < FOUR_OCTAVE_RANGE[3][1]:
+            elif FOUR_OCTAVE_RANGE[3][0] < note.pitch < FOUR_OCTAVE_RANGE[3][1]:
                 inRange += 1
             else:
                 continue
