@@ -11,11 +11,11 @@ BOTTOM_ARC_MELODY = [[23, 18, 11, 4, 2, -1, 0, 2], [4, 7, 6, 4, 7, 12, 14, 16], 
 class geneticUtil:
 
     def __init__(self) -> None:
-        self.flatRegression = self.calcRegression(FLAT_MELODY)
-        self.riseRegression = self.calcRegression(RISING_MELODY)
-        self.fallRegression = self.calcRegression(FALLING_MELODY)
-        self.topArcRegression = self.calcRegression(TOP_ARC_MELODY)
-        self.bottomArcRegression = self.calcRegression(BOTTOM_ARC_MELODY)
+        self.flatRegression = self.calcRegression(self.flatten_measures(FLAT_MELODY))
+        self.riseRegression = self.calcRegression(self.flatten_measures(RISING_MELODY))
+        self.fallRegression = self.calcRegression(self.flatten_measures(FALLING_MELODY))
+        self.topArcRegression = self.calcRegression(self.flatten_measures(TOP_ARC_MELODY))
+        self.bottomArcRegression = self.calcRegression(self.flatten_measures(BOTTOM_ARC_MELODY))
 
     def getMeasureEncode(self, measure):
         times = [note.time for note in measure]
@@ -42,40 +42,45 @@ class geneticUtil:
         return flatted
 
     def calcRegression(self, measures):
-        notes = np.array(self.flatten_measures(measures))
-        notes = notes.reshape((-1, 1))
-        xVals = np.array([x for x in range(len(notes))]).reshape((-1, 1))
-        model = LinearRegression()
-        #print("measures\n",measures)
-        #print("xVals\n",xVals)
-        #print("Notes\n",notes)
-        model.fit(xVals, notes)
-        return model
+        notes = np.array(measures)
+        xVals = self.getValsInRange(len(notes), 0, 16)
+        model = np.polyfit(xVals, notes, 4)
+        p = np.poly1d(model)
+        # print("xVals\n",xVals)
+        # print("Notes\n",notes)
+        # result = p(xVals)
+        # print(result)
+        return p
 
-    def getMSES(self, model, minVal, maxVal):
+    def getValsInRange(self, numVals, minVal, maxVal):
+        return np.array([x for x in np.arange(minVal, maxVal+0.00001, (maxVal-minVal)/(numVals-1))])
+                
+    def getMSES(self, model):
         # fit 10 notes to calculate mean square error
-        #predXVals = np.array([x for x in range(10)]).reshape((-1, 1))
-        #predctsOne = model.predict(predXVals)
-        def getValsInRange(numVals, minVal, maxVal):
-            return np.array([x for x in np.arange(minVal, maxVal+0.00001, (maxVal-minVal)/(numVals-1))]).reshape((-1, 1))
-        predXVals = getValsInRange(10, minVal, maxVal)
-        predctsOne = model.predict(predXVals)
-        predXValsForFlat = getValsInRange(10, FLAT_RANGE[0], FLAT_RANGE[1])
-        predXValsForRise = getValsInRange(10, RISING_RANGE[0], RISING_RANGE[1])
-        predXValsForFall = getValsInRange(10, FALLING_RANGE[0], FALLING_RANGE[1])
-        predXValsForTop = getValsInRange(10, TOP_ARC_RANGE[0], TOP_ARC_RANGE[1])
-        predXValsForBottom = getValsInRange(10, BOTTOM_ARC_RANGE[0], BOTTOM_ARC_RANGE[1])
-        flatResult = self.flatRegression.predict(predXValsForFlat)
-        riseResult = self.riseRegression.predict(predXValsForRise)
-        fallResult = self.fallRegression.predict(predXValsForFall)
-        topResult = self.topArcRegression.predict(predXValsForTop)
-        bottomResult = self.bottomArcRegression.predict(predXValsForBottom)
-
-        mseFlat = np.mean((predctsOne - flatResult)**2)
-        mseRise = np.mean((predctsOne - riseResult)**2)
-        mseFall = np.mean((predctsOne - fallResult)**2)
-        mseTop = np.mean((predctsOne - topResult)**2)
-        mseBottom = np.mean((predctsOne - bottomResult)**2)
+        predXValsForFlat = self.getValsInRange(17, 0, 16)
+        predXValsForRise = self.getValsInRange(17, 0, 16)
+        predXValsForFall = self.getValsInRange(17, 0, 16)
+        predXValsForTop = self.getValsInRange(17, 0, 16)
+        predXValsForBottom = self.getValsInRange(17, 0, 16)
+        flatResult = self.flatRegression(predXValsForFlat)
+        riseResult = self.riseRegression(predXValsForRise)
+        fallResult = self.fallRegression(predXValsForFall)
+        topResult = self.topArcRegression(predXValsForTop)
+        bottomResult = self.bottomArcRegression(predXValsForBottom)
+        predXVals = self.getValsInRange(17, 0, 16)
+        predicts = model(predXVals)
+        # print(predicts)
+        # print(flatResult)
+        # print(riseResult)
+        # print(fallResult)
+        # print(topResult)
+        # print(bottomResult)
+        # we need to do a shifting on y direction to fit the shape
+        mseFlat = np.mean(((predicts - abs(flatResult[0] - predicts[0])) - flatResult)**2)
+        mseRise = np.mean(((predicts - abs(riseResult[0] - predicts[0])) - riseResult)**2)
+        mseFall = np.mean(((predicts - abs(fallResult[0] - predicts[0])) - fallResult)**2)
+        mseTop = np.mean(((predicts - abs(topResult[0] - predicts[0])) - topResult)**2)
+        mseBottom = np.mean(((predicts - abs(bottomResult[0] - predicts[0])) - bottomResult)**2)
         mses = [mseFlat, mseRise, mseFall, mseTop, mseBottom]
         return mses
             

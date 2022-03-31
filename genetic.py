@@ -56,9 +56,11 @@ class Genetic:
                 measure = measures[mIndex]
                 noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
-                pitchVariance = random.randint(-10, 10)
+                pitchVariance = random.randint(-5, 5)
                 timeVariance = float(random.randint(-10, 10) / 10)
+                # print("before: ", self.population[i][j][mIndex][noteIndex].pitch)
                 self.population[i][j][mIndex][noteIndex].pitch += pitchVariance
+                # print(self.population[i][j][mIndex][noteIndex].pitch)
                 self.population[i][j][mIndex][noteIndex].time += timeVariance
                 
     # TBD
@@ -75,22 +77,23 @@ class Genetic:
             for measures in p: # go through measures (sections) of a child
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
-                # print("simillarityScore")
-                # print(simillarityScore)
+                print("simillarityScore")
+                print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
-                # print("shapeScores")
-                # print(shapeScores)
+                print("shapeScores")
+                print(shapeScores[0])
+                print(shapeScores[1])
+                print(shapeScores[2])
+                print(shapeScores[3])
                 linearityScore = self.melodyLinearity()
-                # print("linearityScore")
-                # print(linearityScore)
+                print("linearityScore")
+                print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                # print("prevScore")
-                # print(prevScore)
+                print("prevScore")
+                print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
                 print("melodyRangeScore")
                 print(melodyRangeScore)
-                break
-            break
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
@@ -129,20 +132,14 @@ class Genetic:
         result = []
         for twomeasure in twomeasures:
             flatSection = self.util.flatten_measures(twomeasure)
-            sectionLength = len(flatSection)
-            model = self.util.calcRegression(twomeasure)
-            minval = min(twomeasure[0] + twomeasure[1]) 
-            maxval = max(twomeasure[0] + twomeasure[1])
+            # print("two measure: ", flatSection)
+            # sectionLength = len(flatSection)
+            model = self.util.calcRegression(flatSection)
             # get mses of different type of shapes
-            mses = self.util.getMSES(model, minval, maxval)
+            mses = self.util.getMSES(model)
             sectionResult = []
             for mse in mses:
-                mMax = NOTE_RANAGE / sectionLength
-                m = flatSection[-1] - flatSection[0] # m could be negative
-                factorOne = 1 - (mMax - m) / 2 * mMax
-                factorTwo = 1 - mse**2 / (mse**2 + 10000)
-                score = factorOne * factorTwo # not making too much of sense
-                sectionResult.append(score)
+                sectionResult.append(mse)
             result.append(sectionResult)
         return result
 
