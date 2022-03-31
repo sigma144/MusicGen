@@ -30,9 +30,10 @@ class Genetic:
         for _ in range(50):
             melodytrack = Track()
             melodytrack.notes = melodygen.melody_from_chords(self.testmusic, self.chords, meter=self.meter)
-            # pase the musci object
-            sections = melodytrack.split()
-            self.population.append([sections])
+            # pase the music object
+            section = melodytrack.split()
+            child = [section] # a chilld has mutiple sections
+            self.population.append(child)
 
     def run(self, epoch=10):
         self.initPopulation()
@@ -69,39 +70,50 @@ class Genetic:
 
     # decide life and death of the children
     def melodyEvaluation(self):
-        for p in self.population:
-            for measures in p:
+        for p in self.population: # go through every children
+            for measures in p: # go through measures (sections) of a child
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
+                print("simillarityScore")
                 print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
+                print("shapeScores")
                 print(shapeScores)
                 linearityScore = self.melodyLinearity()
+                print("linearityScore")
                 print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
+                print("prevScore")
                 print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
+                print("melodyRangeScore")
                 print(melodyRangeScore)
-                exit()
-
+            break
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
     # measures how often repating measures occur in this piece
-    # if the same measure occurs often in this piece means this piece is more self similar 
+    # if the same two notes patten occurs in this piece means this piece is more self similar 
     # return between 0 and 1
     def melodySelfSimilarity(self, measures):
         measureDict = {}
-        totalNotes = 0
-        for measure in measures:
-            totalNotes += len(measure)
-            measureEncode = self.util.getMeasureEncode(measure)
-            if measureEncode in measureDict:
-                measureDict[measureEncode] += 1
+        gaps = 0
+        flatted = self.util.flatten_measures(measures)
+        for i in range(len(flatted)-1): # go through two notes a time
+            twoNotes = [flatted[i], flatted[i+1]]
+            gaps += 1
+            twoNotesEncode = self.util.getMeasureEncode(twoNotes)
+            if twoNotesEncode in measureDict:
+                measureDict[twoNotesEncode] += 1
             else:
-                measureDict[measureEncode] = 1
+                measureDict[twoNotesEncode] = 1
+        
+        repetition = 0
+        for i, value in measureDict.items():
+            if value > 1:
+                repetition += value
 
-        score = max(measureDict.values()) / len(measures) 
+        score = repetition / gaps
         return score
 
     # there are 5 representations of melody shapes
@@ -117,8 +129,8 @@ class Genetic:
             flatSection = self.util.flatten_measures(twomeasure)
             sectionLength = len(flatSection)
             model = self.util.calcRegression(twomeasure)
-            minval = min(sum(twomeasure, start=[]))
-            maxval = max(sum(twomeasure, start=[]))
+            minval = min(twomeasure[0] + twomeasure[1]) 
+            maxval = max(twomeasure[0] + twomeasure[1])
             # get mses of different type of shapes
             mses = self.util.getMSES(model, minval, maxval)
             sectionResult = []

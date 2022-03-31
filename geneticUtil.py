@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from sklearn.linear_model import LinearRegression
 
 FLAT_MELODY = [[24, 26, 24, 24, 24, 23, 21, 19], [21, 19, 18, 19, 20, 23, 24, 23], [24]]; FLAT_RANGE = [18, 26]
@@ -19,10 +20,11 @@ class geneticUtil:
     def getMeasureEncode(self, measure):
         times = [note.time for note in measure]
         pitches = [note.pitch for note in measure]
-        timeDiffs = [""] + [times[n]-times[n-1] for n in range(1,len(times))]
+        timeDiffs = [""] + [abs(math.floor(times[n]-times[n-1])) for n in range(1,len(times))]
         result = []
         for timeDiff, pitch in zip(timeDiffs, pitches):
-            result.append(str(timeDiff))
+            if timeDiff  != "":
+                result.append('-' + str(timeDiff) + '-')
             result.append(str(pitch))
         code = "".join(result)
         return code
@@ -34,7 +36,9 @@ class geneticUtil:
         return length
 
     def flatten_measures(self, measures):
-        flatted = sum(measures, start=[])
+        flatted = []
+        for measure in measures:
+            flatted = flatted + measure
         return flatted
 
     def calcRegression(self, measures):
