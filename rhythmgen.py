@@ -31,16 +31,28 @@ def generate_random_rhythm(beats, meter=SIMPLE, instrument=60, scales=None, dens
 
 def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=4):
     def lr(first, last): return list(range(first, last+1))
-    bass_drums = [35,36]
-    snare_drums = [38,39,40]
-    misc_drums = [37,41,42,43]+lr(44,48)+[50,53,54,56,58]+lr(60,70)+lr(75,81)
-    cymbals = [49,51,52,55,57,59]
+    instrument_sets = {"bass_drums": [35,36],
+        "snare_drums": [38,39,40],
+        "misc_drums": [37,41,42,43]+lr(44,48)+[50,53,54,56,58]+lr(60,70)+lr(75,81),
+        "cymbals": [49,51,52,55,57,59]}
+    instruments = {k:random.choice(v) for k,v in instrument_sets.items()}
+
     track = Track(0, [], True)
-    for _ in range(num_instr):
-        instr = random.randint(35, 87)
-        if random.randrange(5) == 0:
-            instr = random.randint(35, 41)
-        notes = generate_random_rhythm(beats, meter, instr)
+
+    if random.randrange(4) > 0:
+        notes = generate_random_rhythm(beats, meter, instruments["bass_drums"], scales=[4, 2, 1, 0.5], density=0.35)
+        track.notes += notes
+    if random.randrange(4) > 0:
+        notes = generate_random_rhythm(beats, meter, instruments["snare_drums"], scales=[4, 2, 1, 0.5], density=0.35)
+        track.notes += notes
+    if random.randrange(4) > 0:
+        notes = generate_random_rhythm(beats, meter, instruments["misc_drums"])
+        track.notes += notes
+    if random.randrange(4) > 0:
+        notes = generate_random_rhythm(beats, meter, instruments["misc_drums"])
+        track.notes += notes
+    if random.randrange(4) > 0:
+        notes = generate_random_rhythm(beats, meter, instruments["misc_drums"])
         track.notes += notes
     return track
 
