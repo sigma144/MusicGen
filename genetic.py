@@ -1,11 +1,12 @@
 from geneticUtil import geneticUtil
+from midi import create_MIDI
 from music import Music, Track
 from musicgen import MusicGen
 import melodygen
 import random
 from rhythmgen import SIMPLE
 import numpy as np
-
+import accomp
 from samples import Samples
 
 '''
@@ -46,6 +47,9 @@ class Genetic:
             epoch -= 1
         
         # decide the ones to survial
+        best = self.population[-1][0]
+        track = Track().join(best)
+        return track
 
     # the mutation algorithm
     def mutation(self):
@@ -72,28 +76,28 @@ class Genetic:
         pass
 
     # decide life and death of the children
-    def melodyEvaluation(self):
+    def melodyEvaluation(self, prnt=False):
         for p in self.population: # go through every children
             for measures in p: # go through measures (sections) of a child
                 self.setFlattend(measures)
                 simillarityScore = self.melodySelfSimilarity(measures)
-                print("simillarityScore")
-                print(simillarityScore)
+                if prnt: print("simillarityScore")
+                if prnt: print(simillarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
-                print("shapeScores")
-                print(shapeScores[0])
-                print(shapeScores[1])
-                print(shapeScores[2])
-                print(shapeScores[3])
+                if prnt: print("shapeScores")
+                if prnt: print(shapeScores[0])
+                if prnt: print(shapeScores[1])
+                if prnt: print(shapeScores[2])
+                if prnt: print(shapeScores[3])
                 linearityScore = self.melodyLinearity()
-                print("linearityScore")
-                print(linearityScore)
+                if prnt: print("linearityScore")
+                if prnt: print(linearityScore)
                 prevScore = self.melodyCMajorKeyPrevalence()
-                print("prevScore")
-                print(prevScore)
+                if prnt: print("prevScore")
+                if prnt: print(prevScore)
                 melodyRangeScore = self.melodyRangeOfPitch()
-                print("melodyRangeScore")
-                print(melodyRangeScore)
+                if prnt: print("melodyRangeScore")
+                if prnt: print(melodyRangeScore)
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
@@ -202,4 +206,23 @@ class Genetic:
         pass
 
 if __name__ == "__main__":
-    Genetic().run(1)
+    genetic = Genetic()
+    music_obj = []
+    for i in range(4):
+        testmusic = Music()
+        chordtrack = Track(instrument = 49, volume=50)
+        chordtrack.notes = accomp.accomp_from_chords(genetic.chords, style=accomp.CHORDS)
+        testmusic.tracks.append(chordtrack)
+        melody = genetic.run(20)
+        testmusic.tracks.append(melody)
+        music_obj.append(testmusic)
+    create_MIDI(music_obj, "genetic.mid")
+    music_obj = []
+    for i in range(4):
+        testmusic2 = Music()
+        melodytrack = Track()
+        melodytrack.notes = melodygen.melody_from_chords(testmusic2, genetic.chords, meter=genetic.meter)
+        testmusic2.tracks.append(melodytrack)
+        testmusic2.tracks.append(chordtrack)
+        music_obj.append(testmusic2)
+    create_MIDI(music_obj, "geneticbaseline.mid")
