@@ -12,8 +12,8 @@ from templates import Template
 class MusicGen():
 
     def generate_music(self):
-        templatestr = random.choice(['ABACA', 'ABACBA', 'ABABCB', 'ABCBA', 'ABCABA'])
-        self.tempo = random.randint(80, 160)
+        templatestr = random.choice(['B4 A3 B5 A4 C5 A5 A2', 'A3 A5 B5 A6 C5 B6 A2', 'A3 B3 A5 B5 C5 B6 B2', 'A3 A5 B4 C3 B5 B6 A2', 'A3 B5 A4 C3 A5 B6 A2'])
+        self.tempo = random.randint(100, 180)
         self.key = random.randrange(12)
         self.meter = random.choice([SIMPLE, COMPOUND])
         def lr(first, last): return list(range(first, last+1))
@@ -35,8 +35,7 @@ class MusicGen():
                 if random.randrange(3) == 0:
                     self.instruments[k] = random.choice(instrument_sets[k])
             types = ["chords", "rchords", "bass", "rbass", "arpeg", "drums"]
-            selected = [random.choice(types) for _ in range(10)] + ["melody"]
-            section = self.generate_section(selected)
+            section = self.generate_section(types + ["melody"])
             sections.append(section)
         template = Template(templateType=templatestr, sections=sections)
         song = template.getSections()
@@ -70,20 +69,20 @@ class MusicGen():
             arpeggiotrack = Track(instrument = self.instruments["arpeggio"], volume=volume_scale)
             arpeggiotrack.notes = accomp_from_chords(chords, style=accomp.ARPEGGIO, meter=self.meter)
             testmusic.tracks.append(arpeggiotrack)
-        if "melody" in types:
-            melodytrack = Track(instrument = self.instruments["melody"], volume=100)
-            melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
-            testmusic.tracks.append(melodytrack)
-            testmusic.melody = melodytrack
-        if "melody2" in types:
-            melodytrack2 = Track(instrument = self.instruments["melody2"])
-            melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
-            testmusic.tracks.append(melodytrack2)
         if "drums" in types:
             rhythmtrack = generate_random_rhythm_track(4, self.meter)
             rhythmtrack = rhythmtrack.repeat(8, 4)
             rhythmtrack.volume = volume_scale
             testmusic.tracks.append(rhythmtrack)
+        random.shuffle(testmusic.tracks)
+        if "melody" in types:
+            melodytrack = Track(instrument = self.instruments["melody"], volume=100, melody=True)
+            melodytrack.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
+            testmusic.tracks.insert(0, melodytrack)
+        if "melody2" in types:
+            melodytrack2 = Track(instrument = self.instruments["melody2"])
+            melodytrack2.notes = melodygen.melody_from_chords(testmusic, chords, meter=self.meter)
+            testmusic.tracks.insert(1, melodytrack2)
         return testmusic
 
 if __name__ == "__main__":

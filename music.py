@@ -20,9 +20,11 @@ class Track:
     '''Create a music track that has notes and an instrument type. It must be added to a Music object to be played.
     instrument(int): The instrument for this track (see instruments.txt for instrument numbers)
     notes(list[Note]): An optional list of Notes to initialize the track with'''
-    def __init__(self, instrument = 0, notes = None, drum_kit = False, volume = 100, section_length = 32):
+    def __init__(self, instrument = 0, notes = None, drum_kit = False, volume = 100, section_length = 32, melody = False):
         if notes is None: notes = []
-        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit; self.volume = volume; self.section_length = section_length
+        self.instrument = instrument; self.notes = notes; self.drum_kit = drum_kit; self.volume = volume; self.section_length = section_length; self.melody = melody
+    def copy(self):
+        return Track(self.instrument, [Note(n.pitch, n.time, n.duration) for n in self.notes], self.drum_kit, self.volume, self.section_length, self.melody)
     '''Returns a new Track with the notes in this track repeated a number of times in a row.
     spacing(float): How many beats between repetitions
     repeats(int): How many repetitions to do'''
@@ -69,7 +71,12 @@ class Music:
         self.tempo = tempo; self.key = key; self.tracks = []
         self.set_scale(mode_or_scale)
         self.section_length = section_length
-        self.melody = None
+    def copy(self):
+        mus = Music(self.tempo, self.key, section_length=self.section_length)
+        mus.scale = self.scale
+        mus.tracks = [t.copy() for t in self.tracks]
+        return mus
+
     '''Sets the scale of the song while shifting it to match the current musical key.
     mode_or_scale(int or list[int]): New mode/scale of the song. Pass in a note letter for the mode or a list[int] scale.'''
     def set_scale(self, mode_or_scale):
@@ -134,5 +141,14 @@ class Music:
 
     def get_melody(self):
         return self.melody
+
+    def mutate_instruments(self):
+        pass
+
+    def reduce_instruments(self, amount=3):
+        track = self.copy()
+        track.tracks = track.tracks[:amount+1]
+        return track
+
 
 

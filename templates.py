@@ -11,9 +11,6 @@ import melodygen
 import time
 from datetime import datetime
 
-
-
-
 templateTypes = ["A", "AB", "ABA", "ABC", "ABCD"]
 
 class Template():
@@ -34,19 +31,11 @@ class Template():
     Returns a list of Music objects following the template.
     '''
     def getSections(self):
-
-        # Only accept valid combinations of sections and templateTypes
-        unique_sections = list(set(self.templateType))
-        if len(self.sections) != len(unique_sections):
-           print("Invalid sections/templateType combination")
-           return []
-
+        section_names = self.templateType.split(' ')
         sections = []
-
-        for c in self.templateType:
-            index = ord(c) - ord('A')
-            sections.append(self.sections[index])
-
+        for c in section_names:
+            index = ord(c[0]) - ord('A')
+            sections.append(self.sections[index].reduce_instruments(int(c[1])))
         return sections
 
 def make_test_section():
