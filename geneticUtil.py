@@ -83,6 +83,12 @@ class geneticUtil:
         mseBottom = np.mean(((predicts - abs(bottomResult[0] - predicts[0])) - bottomResult)**2)
         mses = [mseFlat, mseRise, mseFall, mseTop, mseBottom]
         return mses
+
+    # check dimension of a python list
+    def dim(self, a):
+        if not type(a) == list:
+            return []
+        return [len(a)] + self.dim(a[0])
             
 
 
