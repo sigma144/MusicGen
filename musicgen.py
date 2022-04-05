@@ -17,8 +17,8 @@ class MusicGen():
         self.key = random.randrange(12)
         self.meter = random.choice([SIMPLE, COMPOUND])
         def lr(first, last): return list(range(first, last+1))
-        melodic_instruments = lr(0,8)+lr(17,31)+lr(41,44)+lr(55,88)+lr(105,111)+[115]
-        perc_instruments = lr(0,16)+lr(25,29)+lr(46,47)+lr(105,115)
+        melodic_instruments = lr(0,8)+lr(17,31)+lr(41,44)+lr(55,88)+lr(105,112)+[115]
+        perc_instruments = lr(0,8)+lr(10,16)+lr(25,29)+lr(46,47)+lr(105,115)
         sustain_instruments = lr(17,24)+[30,31]+lr(41,45)+lr(49,55)+lr(57,96)
         bass_instruments = lr(33,40)+[48]
         instrument_sets = {'melody':melodic_instruments,
@@ -44,9 +44,17 @@ class MusicGen():
     def generate_section(self, types=["chords", "rchords", "bass", "rbass", "arpeg", "melody", "drums"]):
         testmusic = Music(tempo = self.tempo, key = self.key)
         chords = random.choice([
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
+            
             Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
             Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
-            Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=4), duration=4, repetitions=2)
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
+            
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
         ])
         volume_scale = 80
         if "chords" in types:
@@ -70,10 +78,12 @@ class MusicGen():
             arpeggiotrack.notes = accomp_from_chords(chords, style=accomp.ARPEGGIO, meter=self.meter)
             testmusic.tracks.append(arpeggiotrack)
         if "drums" in types:
-            rhythmtrack = generate_random_rhythm_track(4, self.meter)
-            rhythmtrack = rhythmtrack.repeat(8, 4)
-            rhythmtrack.volume = volume_scale
-            testmusic.tracks.append(rhythmtrack)
+            for _ in range(2):
+                length = random.choice([1, 2, 4, 8])
+                rhythmtrack = generate_random_rhythm_track(length, self.meter)
+                rhythmtrack = rhythmtrack.repeat(32 // length, length)
+                rhythmtrack.volume = volume_scale
+                testmusic.tracks.append(rhythmtrack)
         random.shuffle(testmusic.tracks)
         if "melody" in types:
             melodytrack = Track(instrument = self.instruments["melody"], volume=100, melody=True)

@@ -9,20 +9,26 @@ import melodygen
 
 class Samples():
 
-    def chord_prog_generator_scale(self, progKey = C, numChords = 4):
+    def chord_prog_generator_scale(self, progKey = C, numChords = 4, match_prob = 0):
         testmusic = Music(key=progKey)
         testmusic.set_scale(MAJOR_MODE)
         chord = []
         chords = []
         choices = []
         suspended = 0
+        last_chord = []
         for i in range(numChords):
-            choices = [1, 1, 1, 2, 3, 4, 4, 5, 5, 6, 6]
-            scale_degree = random.choice(choices)
+            choices = random.choice([
+                [1, 1, 1, 2, 3, 4, 4, 5, 5, 6, 6], #Major
+                [1, 1, 2, 3, 4, 4, 5, 5, 6, 6, 6] #Minor
+            ])
+            scale_degree = random.choice(choices) 
             if suspended:
                 chord = chord = testmusic.get_scale_chord(suspended,
                     inversion=random.choice([0, 0, 0, 1, 2, 3]), seventh=None)
                 suspended = 0
+            elif i % 2 == 1 and random.random() < match_prob:
+                chord = last_chord[:]
             elif i+1 < numChords and random.randrange(3) == 0:
                 chord = testmusic.get_chord(testmusic.get_scale_note(scale_degree), SUSPENDED,
                     inversion=random.choice([0, 0, 0, 1, 2, 3]), seventh=None)
@@ -33,15 +39,17 @@ class Samples():
                     inversion=random.choice([0, 0, 0, 1, 2, 3]),
                     seventh=None)#random.choice([None, None, DOMINANT, MAJOR, DIMINISHED]))
             chords.append(chord)
+            last_chord = chord
         return chords
 
-    def chord_prog_generator_borrowed(self, progKey = C, numChords = 4):
+    def chord_prog_generator_borrowed(self, progKey = C, numChords = 4, match_prob = 0):
         testmusic = Music(key=progKey)
         testmusic.set_scale(MINOR_MODE)
         chord = []
         chords = []
         choices = []
         suspended = 0
+        last_chord = []
         for i in range(numChords):
             choices = [1, 1, 3, 4, 6, 7]
             scale_degree = random.choice(choices)
@@ -49,6 +57,8 @@ class Samples():
                 chord = testmusic.get_chord(testmusic.get_scale_note(suspended), MAJOR,
                     inversion=random.choice([0, 0, 0, 1, 2, 3]), seventh=None)
                 suspended = 0
+            elif i % 2 == 1 and random.random() < match_prob:
+                chord = last_chord[:]
             elif i+1 < numChords and scale_degree in [1, 4, 7] and random.randrange(3) == 0:
                 chord = testmusic.get_chord(testmusic.get_scale_note(scale_degree), SUSPENDED,
                     inversion=random.choice([0, 0, 0, 1, 2, 3]), seventh=None)
@@ -58,6 +68,7 @@ class Samples():
                 chord = testmusic.get_chord(testmusic.get_scale_note(scale_degree), MAJOR,
                 inversion=random.choice([0, 0, 0, 1, 2, 3]), seventh=None)
             chords.append(chord)
+            last_chord = chord
         return chords
 
     def get_chords_from_prog(self, chords, duration = 4, repetitions = 1):
