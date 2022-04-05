@@ -1,3 +1,4 @@
+from socket import SO_LINGER
 from geneticUtil import geneticUtil
 from midi import create_MIDI
 from music import Music, Track
@@ -8,17 +9,33 @@ from rhythmgen import SIMPLE
 import numpy as np
 import accomp
 from samples import Samples
+import copy
+import heapq
 
 '''
-For the genetc algorithm we will evaaluate the songs by eithe 4 measures or 8 measures
+For the genetc algorithm we will evaluate the songs by 8 measures
 '''
 
 NOTE_RANAGE = 49
 FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
+SIMILARITY_GOAL = random.randint(2, 6) / 10 # means half of repeting note
+LINEARILITY_GOAL = random.randint(2, 6) / 10 # how fast pitch changes
+PREV_GOAL = 0.9
+RANGE_GOAL = random.randint(2, 6) / 10
+SHAPE_GOAL = [random.randint(0, 4) for _ in range(4)] # 4 values from 0 to 4 indicate the four shapes, should be randanmly generated
+
+class Child:
+    def __init__(self, id, song) -> None:
+        self.song = song
+        self.id = id
+        self.score = None
+
+    def __lt__(self, other):
+        return self.score < other.score
 
 class Genetic:
 
-    def __init__(self) -> None:
+    def __init__(self, pSize) -> None:
         self.population = []
         self.util = geneticUtil()
         self.flattened = []
@@ -26,63 +43,130 @@ class Genetic:
         self.testmusic = Music(tempo = 100)
         self.meter = SIMPLE
         self.chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=self.testmusic.key, numChords=8), duration=4, repetitions=1)
+        self.childId = 0
+        self.pSize = pSize # the population size 
+        print("SIMILARITY_GOAL: ", SIMILARITY_GOAL)
+        print("LINEARILITY_GOAL: ", LINEARILITY_GOAL)
+        print("PREV_GOAL: ", PREV_GOAL)
+        print("RANGE_GOAL: ", RANGE_GOAL)
+        print("SHAPE_GOAL: ", SHAPE_GOAL)
 
     def initPopulation(self):
-        # generate 50 population
-        for _ in range(50):
+        # generate population
+        for _ in range(self.pSize):
             melodytrack = Track()
             melodytrack.notes = melodygen.melody_from_chords(self.testmusic, self.chords, meter=self.meter)
             # pase the music object
             section = melodytrack.split()
-            child = [section] # a chilld has mutiple sections
+            child = Child(self.childId, [section]) # a chilld has mutiple sections
+            # print("child dimension: ", i, self.util.dim(child))
             self.population.append(child)
+            self.childId += 1
 
     def run(self, epoch=10):
+        epochSize = epoch
         self.initPopulation()
         while epoch > 0:
-            # mutate population
+            print("epoch: ", epochSize - epoch)
+            # mutate population, each parent in the population will produce 1 new child
+            # print("before mutation: ", len(self.population))
             self.mutation()
+            # print("after mutation: ", len(self.population))
             # calculate fitness of the muatted population
-            self.melodyEvaluation()
+            scoreMap = self.melodyEvaluation()
+            self.survival(scoreMap)
+            # print("after survival: ", len(self.population))
+            self.util.printBest(self.population)
             epoch -= 1
         
         # decide the ones to survial
-        best = self.population[-1][0]
+        best = self.population[0].song[0]
         track = Track().join(best)
         return track
 
+    # this function will kill half of the population that does not meet the requirement
+    def survival(self, scoreMap):
+        heap = []
+        for parent in self.population: # go through each parent
+            id = parent.id
+            if parent.score is None:
+                totalScore = 0 # calculate a total score we try to minimize
+                similarityScore = scoreMap[str(id) + "-similarityScore"]
+                simDiff = abs(SIMILARITY_GOAL - similarityScore)
+                totalScore += simDiff * 0.2
+
+                linearityScore = scoreMap[str(id) + "-linearityScore"]
+                linearDiff = abs(LINEARILITY_GOAL - linearityScore)
+                totalScore += linearDiff * 0.2
+
+                prevScore = scoreMap[str(id) + "-prevScore"]
+                prevDiff = abs(PREV_GOAL - prevScore)
+                totalScore += prevDiff * 0.2
+
+                melodyRangeScore = scoreMap[str(id) + "-melodyRangeScore"]
+                rangeDiff = abs(RANGE_GOAL - melodyRangeScore)
+                totalScore += rangeDiff * 0.2
+
+                shapeScores = scoreMap[str(id) + "-shapeScores"]
+                for i, shapeType in enumerate(SHAPE_GOAL):
+                    totalScore += shapeScores[i][shapeType] * 0.05
+                parent.score = totalScore
+            # push on the heap, mini heap
+            # if len(heap) >= self.pSize:
+            #     heapq.heappushpop(heap, parent)
+            # else:
+            heapq.heappush(heap, parent)
+
+        newPopulation = []
+        while heap:
+            newPopulation.append(heapq.heappop(heap))
+        self.population = newPopulation
+
     # the mutation algorithm
     def mutation(self):
-        for i, p in enumerate(self.population):
-            for j, measures in enumerate(p):
+        for i in range(self.pSize):
+            newChildSong = []
+            p = self.population[i].song
+            for j in range(len(p)):
+                # cerate the new children
+                newMeasures = copy.deepcopy(p[j])
                 # randomly change a note in 8 measures?
                 mIndex = random.randint(0, 7)
-                measure = measures[mIndex]
+                measure = newMeasures[mIndex]
                 noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
                 pitchVariance = random.randint(-5, 5)
-                timeVariance = float(random.randint(-10, 10) / 10)
-                # print("before: ", self.population[i][j][mIndex][noteIndex].pitch)
-                self.population[i][j][mIndex][noteIndex].pitch += pitchVariance
-                # print(self.population[i][j][mIndex][noteIndex].pitch)
-                self.population[i][j][mIndex][noteIndex].time += timeVariance
-                
-    # TBD
-    def crossover(self):
-        pass
+                # add a boundary check for pitch
+                if newMeasures[mIndex][noteIndex].pitch + pitchVariance < 36:
+                    newMeasures[mIndex][noteIndex].pitch = 36
+                elif newMeasures[mIndex][noteIndex].pitch + pitchVariance > 84:
+                    newMeasures[mIndex][noteIndex].pitch = 84
+                else:
+                    newMeasures[mIndex][noteIndex].pitch += pitchVariance
 
-    # Get section of measures from song
-    def getMelody(self, song):
-        pass
+                # we do not want to modify the time of the first node or the last node
+                # now the time change will only be in between the note before or after it
+                if noteIndex != 0 and noteIndex != len(measure)-1:
+                    interval = newMeasures[mIndex][noteIndex + 1].time - newMeasures[mIndex][noteIndex - 1].time
+                    newTime = newMeasures[mIndex][noteIndex - 1].time + (random.randint(1, 9) / 10) * interval
+                    newMeasures[mIndex][noteIndex].time = newTime
+                newChildSong.append(newMeasures)
+            # append the new child as new population
+            self.population.append(Child(self.childId, newChildSong))
+            self.childId += 1
+            # exit()
 
     # decide life and death of the children
     def melodyEvaluation(self, prnt=False):
-        for p in self.population: # go through every children
-            for measures in p: # go through measures (sections) of a child
+        scoreMap = {}
+        for i, p in enumerate(self.population): # go through every children
+            sections = p.song
+            id = p.id
+            for im, measures in enumerate(sections): # go through measures (sections) of a child
                 self.setFlattend(measures)
-                simillarityScore = self.melodySelfSimilarity(measures)
-                if prnt: print("simillarityScore")
-                if prnt: print(simillarityScore)
+                similarityScore = self.melodySelfSimilarity(measures)
+                if prnt: print("similarityScore")
+                if prnt: print(similarityScore)
                 shapeScores = self.melodyShape(measures) # how to deal with shape scores
                 if prnt: print("shapeScores")
                 if prnt: print(shapeScores[0])
@@ -98,12 +182,19 @@ class Genetic:
                 melodyRangeScore = self.melodyRangeOfPitch()
                 if prnt: print("melodyRangeScore")
                 if prnt: print(melodyRangeScore)
+                # encode and store the scores in a dictionary
+                scoreMap[str(id) + "-similarityScore"] = similarityScore
+                scoreMap[str(id) + "-shapeScores"] = shapeScores
+                scoreMap[str(id) + "-linearityScore"] = linearityScore
+                scoreMap[str(id) + "-prevScore"] = prevScore
+                scoreMap[str(id) + "-melodyRangeScore"] = melodyRangeScore
+        return scoreMap
 
     def setFlattend(self, measures):
         self.flattened = self.util.flatten_measures(measures)
     # measures how often repating measures occur in this piece
     # if the same two notes patten occurs in this piece means this piece is more self similar 
-    # return between 0 and 1, around 0.2 to 0.3, caan be as high as 0.4 to 0.5
+    # return between 0 and 1, around 0.2 to 0.3, can be as high as 0.4 to 0.5
     def melodySelfSimilarity(self, measures):
         measureDict = {}
         gaps = 0
@@ -188,35 +279,20 @@ class Genetic:
                 continue
         return inRange/(len(self.flattened) * r)
 
-    # TBD
-    def getChords(self):
-        pass
-
-    # get 8 measures of rhythm
-    def getRhythm(self):
-        pass
-
-    # measures are passed in as an 2d array
-    # each subarray is a measure, a measure is an array of tuples(notes), each tuple has (pitch, time) information
-    def rhythmEvaluation(self, measures):
-        pass
-
-    # TBD
-    def chordsEvaluation(self):
-        pass
-
 if __name__ == "__main__":
-    genetic = Genetic()
+    pSize = 50
+    genetic = Genetic(pSize)
     music_obj = []
-    for i in range(4):
+    for i in range(1):
         testmusic = Music()
         chordtrack = Track(instrument = 49, volume=50)
         chordtrack.notes = accomp.accomp_from_chords(genetic.chords, style=accomp.CHORDS)
         testmusic.tracks.append(chordtrack)
-        melody = genetic.run(20)
+        melody = genetic.run(epoch=50)
         testmusic.tracks.append(melody)
         music_obj.append(testmusic)
     create_MIDI(music_obj, "genetic.mid")
+
     music_obj = []
     for i in range(4):
         testmusic2 = Music()
