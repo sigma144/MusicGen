@@ -18,10 +18,10 @@ For the genetc algorithm we will evaluate the songs by 8 measures
 
 NOTE_RANAGE = 49
 FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
-SIMILARITY_GOAL = 0.5 # means half of repeting note
-LINEARILITY_GOAL = 0.3 # how fast pitch changes
+SIMILARITY_GOAL = random.randint(2, 6) / 10 # means half of repeting note
+LINEARILITY_GOAL = random.randint(2, 6) / 10 # how fast pitch changes
 PREV_GOAL = 0.9
-RANGE_GOAL = 0.3
+RANGE_GOAL = random.randint(2, 6) / 10
 SHAPE_GOAL = [random.randint(0, 4) for _ in range(4)] # 4 values from 0 to 4 indicate the four shapes, should be randanmly generated
 
 class Child:
