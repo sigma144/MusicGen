@@ -44,7 +44,7 @@ class geneticUtil:
     def calcRegression(self, measures):
         notes = np.array(measures)
         xVals = self.getValsInRange(len(notes), 0, 16)
-        model = np.polyfit(xVals, notes, 4)
+        model = np.polyfit(xVals, notes, 3)
         p = np.poly1d(model)
         # print("xVals\n",xVals)
         # print("Notes\n",notes)
@@ -82,6 +82,9 @@ class geneticUtil:
         mseTop = np.mean(((predicts - abs(topResult[0] - predicts[0])) - topResult)**2)
         mseBottom = np.mean(((predicts - abs(bottomResult[0] - predicts[0])) - bottomResult)**2)
         mses = [mseFlat, mseRise, mseFall, mseTop, mseBottom]
+        # nomalize mse value
+        maxVal = max(mses)
+        mses = [x/maxVal for x in mses]
         return mses
 
     # check dimension of a python list
@@ -89,6 +92,12 @@ class geneticUtil:
         if not type(a) == list:
             return []
         return [len(a)] + self.dim(a[0])
-            
 
+    def printPopulation(self, population):
+        for p in population:
+            print("id: ", p.id)
+            print("score: ", p.score)
 
+    def printBest(self, population):
+        p = population[0]
+        print("best child with id {} score {}".format(p.id, p.score))
