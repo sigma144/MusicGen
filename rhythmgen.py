@@ -29,7 +29,7 @@ def generate_random_rhythm(beats, meter=SIMPLE, instrument=60, scales=None, dens
                 notes.append(Note(instrument, time, 1))
     return notes
 
-def generate_random_rhythm_track(beats, meter=SIMPLE, num_instr=4):
+def generate_random_rhythm_track(beats, meter=SIMPLE):
     def lr(first, last): return list(range(first, last+1))
     instrument_sets = {"bass_drums": [35,36],
         "snare_drums": [38,39,40],
