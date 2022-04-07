@@ -16,11 +16,6 @@ For the genetc algorithm we will evaluate the songs by 8 measures
 
 NOTE_RANAGE = 49
 FOUR_OCTAVE_RANGE = [[36, 48], [48, 60], [60, 72], [72, 84]]
-SIMILARITY_GOAL = random.randint(2, 6) / 10 # means half of repeting note
-LINEARILITY_GOAL = random.randint(2, 6) / 10 # how fast pitch changes
-PREV_GOAL = 0.9
-RANGE_GOAL = random.randint(2, 6) / 10
-SHAPE_GOAL = [random.randint(0, 4) for _ in range(4)] # 4 values from 0 to 4 indicate the four shapes, should be randanmly generated
 
 class Child:
     def __init__(self, id, song) -> None:
@@ -34,6 +29,11 @@ class Child:
 class Genetic:
 
     def __init__(self, pSize) -> None:
+        self.SIMILARITY_GOAL = random.randint(2, 6) / 10 # means half of repeting note
+        self.LINEARILITY_GOAL = random.randint(2, 6) / 10 # how fast pitch changes
+        self.PREV_GOAL = 0.9
+        self.RANGE_GOAL = random.randint(2, 6) / 10
+        self.SHAPE_GOAL = [random.randint(0, 4) for _ in range(4)] # 4 values from 0 to 4 indicate the four shapes, should be randanmly generated
         self.population = []
         self.util = geneticUtil()
         self.flattened = []
@@ -43,11 +43,11 @@ class Genetic:
         self.chords = Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=self.testmusic.key, numChords=8), duration=4, repetitions=1)
         self.childId = 0
         self.pSize = pSize # the population size 
-        print("SIMILARITY_GOAL: ", SIMILARITY_GOAL)
-        print("LINEARILITY_GOAL: ", LINEARILITY_GOAL)
-        print("PREV_GOAL: ", PREV_GOAL)
-        print("RANGE_GOAL: ", RANGE_GOAL)
-        print("SHAPE_GOAL: ", SHAPE_GOAL)
+        print("SIMILARITY_GOAL: ", self.SIMILARITY_GOAL)
+        print("LINEARILITY_GOAL: ", self.LINEARILITY_GOAL)
+        print("PREV_GOAL: ", self.PREV_GOAL)
+        print("RANGE_GOAL: ", self.RANGE_GOAL)
+        print("SHAPE_GOAL: ", self.SHAPE_GOAL)
 
     def initPopulation(self):
         # generate population
@@ -90,23 +90,23 @@ class Genetic:
             if parent.score is None:
                 totalScore = 0 # calculate a total score we try to minimize
                 similarityScore = scoreMap[str(id) + "-similarityScore"]
-                simDiff = abs(SIMILARITY_GOAL - similarityScore)
+                simDiff = abs(self.SIMILARITY_GOAL - similarityScore)
                 totalScore += simDiff * 0.2
 
                 linearityScore = scoreMap[str(id) + "-linearityScore"]
-                linearDiff = abs(LINEARILITY_GOAL - linearityScore)
+                linearDiff = abs(self.LINEARILITY_GOAL - linearityScore)
                 totalScore += linearDiff * 0.2
 
                 prevScore = scoreMap[str(id) + "-prevScore"]
-                prevDiff = abs(PREV_GOAL - prevScore)
+                prevDiff = abs(self.PREV_GOAL - prevScore)
                 totalScore += prevDiff * 0.2
 
                 melodyRangeScore = scoreMap[str(id) + "-melodyRangeScore"]
-                rangeDiff = abs(RANGE_GOAL - melodyRangeScore)
+                rangeDiff = abs(self.RANGE_GOAL - melodyRangeScore)
                 totalScore += rangeDiff * 0.2
 
                 shapeScores = scoreMap[str(id) + "-shapeScores"]
-                for i, shapeType in enumerate(SHAPE_GOAL):
+                for i, shapeType in enumerate(self.SHAPE_GOAL):
                     totalScore += shapeScores[i][shapeType] * 0.05
                 parent.score = totalScore
             # push on the heap, mini heap
@@ -133,7 +133,7 @@ class Genetic:
                 measure = newMeasures[mIndex]
                 noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
-                pitchVariance = random.randint(-1, 1)
+                pitchVariance = random.randint(-3, 3)
                 # add a boundary check for pitch
                 if newMeasures[mIndex][noteIndex].pitch + pitchVariance < 36:
                     newMeasures[mIndex][noteIndex].pitch = 36
@@ -277,25 +277,26 @@ class Genetic:
         return inRange/(len(self.flattened) * r)
 
 if __name__ == "__main__":
-    pSize = 100
-    genetic = Genetic(pSize)
-    music_obj = []
-    for i in range(1):
-        testmusic = Music()
-        chordtrack = Track(instrument = 49, volume=50)
-        chordtrack.notes = accomp.accomp_from_chords(genetic.chords, style=accomp.CHORDS)
-        testmusic.tracks.append(chordtrack)
-        melody = genetic.run(epoch=200)
-        testmusic.tracks.append(melody)
-        music_obj.append(testmusic)
-    create_MIDI(music_obj, "genetic.mid")
+    for z in range(50):
+        pSize = 100
+        genetic = Genetic(pSize)
+        music_obj = []
+        for i in range(1):
+            testmusic = Music()
+            chordtrack = Track(instrument = 49, volume=50)
+            chordtrack.notes = accomp.accomp_from_chords(genetic.chords, style=accomp.CHORDS)
+            testmusic.tracks.append(chordtrack)
+            melody = genetic.run(epoch=200)
+            testmusic.tracks.append(melody)
+            music_obj.append(testmusic)
+        create_MIDI(music_obj, str(z) + "-genetic.mid")
 
-    music_obj = []
-    for i in range(4):
-        testmusic2 = Music()
-        melodytrack = Track()
-        melodytrack.notes = melodygen.melody_from_chords(testmusic2, genetic.chords, meter=genetic.meter)
-        testmusic2.tracks.append(melodytrack)
-        testmusic2.tracks.append(chordtrack)
-        music_obj.append(testmusic2)
-    create_MIDI(music_obj, "geneticbaseline.mid")
+        music_obj = []
+        for i in range(4):
+            testmusic2 = Music()
+            melodytrack = Track()
+            melodytrack.notes = melodygen.melody_from_chords(testmusic2, genetic.chords, meter=genetic.meter)
+            testmusic2.tracks.append(melodytrack)
+            testmusic2.tracks.append(chordtrack)
+            music_obj.append(testmusic2)
+        create_MIDI(music_obj, str(z) + "-geneticbaseline.mid")
