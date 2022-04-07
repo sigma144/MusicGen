@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from sklearn.linear_model import LinearRegression
 
 FLAT_MELODY = [[24, 26, 24, 24, 24, 23, 21, 19], [21, 19, 18, 19, 20, 23, 24, 23], [24]]; FLAT_RANGE = [18, 26]
 RISING_MELODY = [[-6, -5, -3, -1, 0, 4, 7, 9], [12, 11, 12, 16, 19, 18, 19, 23], [24]]; RISING_RANGE = [-6, 23]

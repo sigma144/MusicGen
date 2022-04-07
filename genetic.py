@@ -1,4 +1,3 @@
-from socket import SO_LINGER
 from geneticUtil import geneticUtil
 from midi import create_MIDI
 from music import Music, Track
@@ -6,7 +5,6 @@ from musicgen import MusicGen
 import melodygen
 import random
 from rhythmgen import SIMPLE
-import numpy as np
 import accomp
 from samples import Samples
 import copy
@@ -135,7 +133,7 @@ class Genetic:
                 measure = newMeasures[mIndex]
                 noteIndex = random.randint(0, len(measure)-1)
                 # mutate pitch and time
-                pitchVariance = random.randint(-5, 5)
+                pitchVariance = random.randint(-1, 1)
                 # add a boundary check for pitch
                 if newMeasures[mIndex][noteIndex].pitch + pitchVariance < 36:
                     newMeasures[mIndex][noteIndex].pitch = 36
@@ -148,13 +146,12 @@ class Genetic:
                 # now the time change will only be in between the note before or after it
                 if noteIndex != 0 and noteIndex != len(measure)-1:
                     interval = newMeasures[mIndex][noteIndex + 1].time - newMeasures[mIndex][noteIndex - 1].time
-                    newTime = newMeasures[mIndex][noteIndex - 1].time + (random.randint(1, 9) / 10) * interval
+                    newTime = newMeasures[mIndex][noteIndex - 1].time + (random.randint(1, 4) / 8) * interval
                     newMeasures[mIndex][noteIndex].time = newTime
                 newChildSong.append(newMeasures)
             # append the new child as new population
             self.population.append(Child(self.childId, newChildSong))
             self.childId += 1
-            # exit()
 
     # decide life and death of the children
     def melodyEvaluation(self, prnt=False):
@@ -280,7 +277,7 @@ class Genetic:
         return inRange/(len(self.flattened) * r)
 
 if __name__ == "__main__":
-    pSize = 50
+    pSize = 100
     genetic = Genetic(pSize)
     music_obj = []
     for i in range(1):
@@ -288,7 +285,7 @@ if __name__ == "__main__":
         chordtrack = Track(instrument = 49, volume=50)
         chordtrack.notes = accomp.accomp_from_chords(genetic.chords, style=accomp.CHORDS)
         testmusic.tracks.append(chordtrack)
-        melody = genetic.run(epoch=50)
+        melody = genetic.run(epoch=200)
         testmusic.tracks.append(melody)
         music_obj.append(testmusic)
     create_MIDI(music_obj, "genetic.mid")
