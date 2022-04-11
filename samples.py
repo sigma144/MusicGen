@@ -84,6 +84,19 @@ class Samples():
             nchords.append(chord)
         return nchords
 
+    def merge_chords_from_progs(self, chord_prog_list, section_length):
+        split_point = random.choice([0.25, 0.5, 0.75])
+        prog1 = random.choice(chord_prog_list)
+        prog2 = random.choice(chord_prog_list)
+        newprog = []
+        for c in prog1:
+            if c[0].time + 0.00001 < split_point * section_length:
+                newprog.append(c)
+        for c in prog2:
+            if c[0].time + 0.00001 >= split_point * section_length:
+                newprog.append(c)
+        return newprog
+
 if __name__ == "__main__":
     #New Chord Generator
     testmusic = Music(tempo = 100)

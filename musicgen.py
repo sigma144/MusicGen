@@ -43,19 +43,20 @@ class MusicGen():
 
     def generate_section(self, types=["chords", "rchords", "bass", "rbass", "arpeg", "melody", "drums"]):
         testmusic = Music(tempo = self.tempo, key = self.key)
-        chords = random.choice([
+        chordprogs = random.choice([[
             Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
+        ],[
             Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
+            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
+        ],[
             Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=8), duration=4, repetitions=1),
-            
-            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
-            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
             Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=4), duration=4, repetitions=2),
-            
-            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
-            Samples().get_chords_from_prog(Samples().chord_prog_generator_scale(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
             Samples().get_chords_from_prog(Samples().chord_prog_generator_borrowed(progKey=testmusic.key, numChords=8, match_prob = 0.5), duration=2, repetitions=2),
-        ])
+        ]])
+        chords = Samples().merge_chords_from_progs(chordprogs, 32)
         volume_scale = 80
         if "chords" in types:
             chordtrack = Track(instrument = self.instruments["chords"], volume=volume_scale)
