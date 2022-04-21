@@ -12,7 +12,8 @@
 *.vsix
 .vscode/settings.json
 
-*.mid
+midifiles/
+#*.mid
 *.pyc
 
 test.py
